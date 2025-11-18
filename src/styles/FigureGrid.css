@@ -64,7 +64,7 @@ body {
   background: #f9fafb;
   cursor: pointer;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 8px;
   transition: background 0.2s, border-color 0.2s;
 }
 
@@ -333,54 +333,53 @@ body {
   .figure-card {
     min-height: 340px;
   }
-
-  /* Sticky top bar */
-    .topbar {
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        background: #1f2937;
-        color: white;
-        padding: 16px 24px;
-        border-bottom: 2px solid #111827;
-    }
-    .topbar-title {
-        font-size: 20px;
-        font-weight: 700;
-    }
-    .topbar-subtitle {
-        font-size: 14px;
-        color: #d1d5db;
-        margin-top: 4px;
-    }
-
-    /* Code buttons */
-    .code-buttons {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 8px;
-    }
-    .code-button {
-        padding: 8px 14px;
-        border-radius: 20px; /* rounded pill */
-        border: 1px solid var(--border);
-        background: #f9fafb;
-        color: #374151;
-        font-size: 13px;
-        cursor: pointer;
-        transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-    }
-    .code-button:hover {
-        background: #f3f4f6;
-    }
-    .code-button.active {
-        background: #facc15; /* yellow */
-        color: #1f2937;
-        border-color: #facc15;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-    }
-
-
 }
+/* Sticky top bar */
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    color: #9C4A8C;
+    padding: 12px 14px;
+    border-bottom: 3px solid #F3F5F8 ;
+}
+.topbar-title {
+    font-size: 20px;
+    font-weight: 700;
+}
+.topbar-subtitle {
+    font-size: 14px;
+    color: #d1d5db;
+    margin-top: 4px;
+}
+
+/* Code buttons */
+.code-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+}
+.code-button {
+    padding: 8px 14px;
+    border-radius: 20px; /* rounded pill */
+    border: 1px solid var(--border);
+    background: #f9fafb;
+    color: #374151;
+    font-size: 10px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+.code-button:hover {
+    background: #f2f6fb;
+}
+.code-button.active {
+    background: #FAAA12; /* yellow */
+    color: white;
+    border-color: #FAAA12;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+
