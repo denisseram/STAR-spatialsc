@@ -5,7 +5,7 @@ export default function FigureGrid({ figures }) {
   const [selectedCodes, setSelectedCodes] = useState([]);
   const [modal, setModal] = useState(null);
 
-  // ✅ Deduplicate codes
+  // Deduplicate codes
   const uniqueCodes = [...new Set(figures.flatMap((f) => f.codes))];
 
   // Group codes Father -> Children
@@ -21,6 +21,10 @@ export default function FigureGrid({ figures }) {
       miscCodes.push(code);
     }
   });
+
+  // ✅ Count papers (unique sources) and figures
+  const totalFigures = figures.length;
+  const totalPapers = new Set(figures.map((f) => f.sourceGuid)).size;
 
   const toggleCode = (code) => {
     setSelectedCodes((prev) =>
@@ -57,7 +61,7 @@ export default function FigureGrid({ figures }) {
       <header className="topbar">
         <h1 className="topbar-title">Spatial Transcriptomics Survey</h1>
         <p className="topbar-subtitle">
-          {figures.length} papers · {figures.length} figures
+          {totalPapers} papers · {totalFigures} figures
         </p>
       </header>
 
@@ -113,7 +117,6 @@ export default function FigureGrid({ figures }) {
           )}
         </aside>
 
-        {/* Main content stays the same */}
         <main className="main-content">
           <div className="stats">
             <div className="stats-text">
