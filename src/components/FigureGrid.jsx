@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import "../star-spatialsc/styles/FigureGrid.css";
+import "../styles/FigureGrid.css";
 
 export default function FigureGrid({ figures }) {
   const [selectedCodes, setSelectedCodes] = useState([]);
   const [modal, setModal] = useState(null);
 
-  // Deduplicate codes
+  // ✅ Deduplicate codes
   const uniqueCodes = [...new Set(figures.flatMap((f) => f.codes))];
 
   // Group codes Father -> Children
@@ -22,7 +22,7 @@ export default function FigureGrid({ figures }) {
     }
   });
 
-  //  Count papers (unique sources) and figures
+  // ✅ Count papers (unique sources) and figures
   const totalFigures = figures.length;
   const totalPapers = new Set(figures.map((f) => f.sourceGuid)).size;
 
@@ -135,11 +135,20 @@ export default function FigureGrid({ figures }) {
                 <div key={fig.guid} className="figure-card">
                   <div className="figure-image-wrap">
                     <img
-                      src={fig.imagePath}
+                      src={new URL(
+                        `/data/images/${fig.sourceGuid}/${fig.guid}.png`,
+                        import.meta.env.BASE_URL
+                      ).href}
                       alt={fig.name}
                       className="figure-image"
                       onClick={() =>
-                        setModal({ src: fig.imagePath, title: fig.name })
+                        setModal({
+                          src: new URL(
+                            `/data/images/${fig.sourceGuid}/${fig.guid}.png`,
+                            import.meta.env.BASE_URL
+                          ).href,
+                          title: fig.name,
+                        })
                       }
                     />
                   </div>
