@@ -22,7 +22,7 @@ export default function FigureGrid({ figures }) {
     }
   });
 
-  // ✅ Count papers (unique sources) and figures
+  //  Count papers (unique sources) and figures
   const totalFigures = figures.length;
   const totalPapers = new Set(figures.map((f) => f.sourceGuid)).size;
 
