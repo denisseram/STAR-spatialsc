@@ -1,11 +1,72 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import fs from "fs";
+import path from "path";
+import FigureGrid from "../components/FigureGrid.jsx";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+// Update this path to point to your output directory
+const OUTPUT_DIR = "./public/data";
+
+// Read all the JSON files
+const quotationsDir = path.join(OUTPUT_DIR, "content", "quotations");
+const codesDir = path.join(OUTPUT_DIR, "content", "codes");
+const sourcesDir = path.join(OUTPUT_DIR, "content", "sources");
+
+// Load quotations
+const quotationFiles = fs.readdirSync(quotationsDir);
+const quotations = quotationFiles.map((file) => {
+  const content = fs.readFileSync(path.join(quotationsDir, file), "utf-8");
+  return JSON.parse(content);
+});
+
+// Load codes
+const codeFiles = fs.readdirSync(codesDir);
+const codes = codeFiles.map((file) => {
+  const content = fs.readFileSync(path.join(codesDir, file), "utf-8");
+  return JSON.parse(content);
+});
+
+// Load sources
+const sourceFiles = fs.readdirSync(sourcesDir);
+const sources = sourceFiles.map((file) => {
+  const content = fs.readFileSync(path.join(sourcesDir, file), "utf-8");
+  return JSON.parse(content);
+});
+
+// Create lookup maps
+const codeMap = Object.fromEntries(codes.map((c) => [c.guid, c]));
+const sourceMap = Object.fromEntries(sources.map((s) => [s.guid, s]));
+
+// Prepare data for the client
+const figuresData = quotations
+  .filter((q) => q.Coding && q.Coding.length > 0)
+  .map((quotation) => {
+    const codingArray = Array.isArray(quotation.Coding)
+      ? quotation.Coding
+      : [quotation.Coding];
+    const codeGuids = codingArray.map((c) => c.CodeRef.attrs.targetGUID);
+    const codeNames = codeGuids.map((guid) => codeMap[guid]?.name || "Unknown");
+
+    return {
+      guid: quotation.attrs.guid,
+      name: quotation.attrs.name,
+      sourceGuid: quotation.source_guid,
+      sourceName: sourceMap[quotation.source_guid]?.name || "Unknown",
+      subfigNum: quotation.subfig_num,
+      codes: codeNames,
+      codeGuids: codeGuids,
+      imagePath: `/data/images/${quotation.source_guid}/${quotation.attrs.guid}.png`,
+    };
+  });
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>QDPX Viewer</title>
+  </head>
+  <body>
+    <!-- Pasamos figuresData como prop -->
+    <FigureGrid client:load figures={figuresData} />
+  </body>
+</html>
+
