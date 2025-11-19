@@ -190,11 +190,22 @@ body {
   gap: 8px;
   margin-top: 4px;
 }
+.code-block .code-child {
+  display: inline-flex;  
+}
+
+.code-block {
+  gap: 4px;
+}
 
 .code-block {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+}
+
+.code-block > .code-child {
+  display: inline-flex;
+  margin: 10px;
 }
 
 .code-father {
@@ -209,8 +220,10 @@ body {
   background: var(--primary-bg);
   padding: 4px 8px;
   border-radius: 8px;
-  display: inline-block;
+  display: flex;
+  flex-wrap: wrap; 
   width: fit-content;
+  margin-right: 4px;
 }
 
 /* No results */
@@ -342,7 +355,7 @@ body {
     top: 0;
     z-index: 100;
     background: white;
-    color: #9C4A8C;
+    color: #0e699d;
     padding: 12px 14px;
     border-bottom: 3px solid #F3F5F8 ;
     border-radius: 10px; /* add rounded corners */
@@ -386,4 +399,167 @@ body {
     box-shadow: 0 3px 6px rgba(0,0,0,0.15);
 }
 
+.figure-citation {
+  font-weight: 600;
+  color: #40274a;
+  margin-bottom: 4px;
+  font-size: 12px;
+  text-align: right;
+}
 
+/* Style "et al." in italics within citations */
+.figure-citation::after {
+  content: attr(data-citation);
+}
+
+.figure-paper-title {
+  font-weight: 500;
+  color: #a7a7a7;
+  margin-bottom: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Container for the button to control alignment */
+.paper-link-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto; /* Push to bottom of card */
+  padding-top: 12px;
+}
+
+.paper-link-button {
+  display: inline-block;
+  padding: 6px 14px;
+  background-color: #0e699d;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 11px;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.paper-link-button:hover {
+  background-color: #2980b9;
+}
+
+/* Ensure figure-info uses flexbox to push button to bottom */
+.figure-info {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Modal styles */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  cursor: pointer;
+}
+
+.modal {
+  background: white;
+  border-radius: 8px;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  cursor: default;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #40274a;
+  flex: 1;
+  padding-right: 20px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.modal-close:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.modal-body {
+  padding: 20px;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+.modal-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal-link-button {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #0e699d;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 13px;
+  transition: background-color 0.2s;
+}
+
+.modal-link-button:hover {
+  background-color: #2980b9;
+}
+
+/* Make image clickable with pointer cursor */
+.figure-image {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.figure-image:hover {
+  opacity: 0.9;
+}

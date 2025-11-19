@@ -1,0 +1,150 @@
+[
+	{
+		"id": "http://zotero.org/users/17323078/items/HALG564S",
+		"type": "article-journal",
+		"abstract": "Abstract\n            Spatial omics data are advancing the study of tissue organization and cellular communication at an unprecedented scale. Flexible tools are required to store, integrate and visualize the large diversity of spatial omics data. Here, we present Squidpy, a Python framework that brings together tools from omics and image analysis to enable scalable description of spatial molecular data, such as transcriptome or multivariate proteins. Squidpy provides efficient infrastructure and numerous analysis methods that allow to efficiently store, manipulate and interactively visualize spatial omics data. Squidpy is extensible and can be interfaced with a variety of already existing libraries for the scalable analysis of spatial omics data.",
+		"container-title": "Nature Methods",
+		"DOI": "10.1038/s41592-021-01358-2",
+		"ISSN": "1548-7091, 1548-7105",
+		"issue": "2",
+		"journalAbbreviation": "Nat Methods",
+		"language": "en",
+		"page": "171-178",
+		"source": "DOI.org (Crossref)",
+		"title": "Squidpy: a scalable framework for spatial omics analysis",
+		"title-short": "Squidpy",
+		"URL": "https://www.nature.com/articles/s41592-021-01358-2",
+		"volume": "19",
+		"author": [
+			{
+				"family": "Palla",
+				"given": "Giovanni"
+			},
+			{
+				"family": "Spitzer",
+				"given": "Hannah"
+			},
+			{
+				"family": "Klein",
+				"given": "Michal"
+			},
+			{
+				"family": "Fischer",
+				"given": "David"
+			},
+			{
+				"family": "Schaar",
+				"given": "Anna Christina"
+			},
+			{
+				"family": "Kuemmerle",
+				"given": "Louis Benedikt"
+			},
+			{
+				"family": "Rybakov",
+				"given": "Sergei"
+			},
+			{
+				"family": "Ibarra",
+				"given": "Ignacio L."
+			},
+			{
+				"family": "Holmberg",
+				"given": "Olle"
+			},
+			{
+				"family": "Virshup",
+				"given": "Isaac"
+			},
+			{
+				"family": "Lotfollahi",
+				"given": "Mohammad"
+			},
+			{
+				"family": "Richter",
+				"given": "Sabrina"
+			},
+			{
+				"family": "Theis",
+				"given": "Fabian J."
+			}
+		],
+		"accessed": {
+			"date-parts": [
+				[
+					"2025",
+					11,
+					19
+				]
+			]
+		},
+		"issued": {
+			"date-parts": [
+				[
+					"2022",
+					2
+				]
+			]
+		}
+	},
+	{
+		"id": "http://zotero.org/users/17323078/items/RYQYWKHB",
+		"type": "article-journal",
+		"abstract": "Abstract\n            In the last decade, single cell RNAseq (scRNAseq) datasets have grown in size from a single cell to millions of cells. Due to its high dimensionality, it is not always feasible to visualize scRNAseq data and share it in a scientific report or an article publication format. Recently, many interactive analysis and visualization tools have been developed to address this issue and facilitate knowledge transfer in the scientific community. In this study, we review several of the currently available scRNAseq visualization tools and benchmark the subset that allows to visualize the data on the web and share it with others. We consider the memory and time required to prepare datasets for sharing as the number of cells increases, and additionally review the user experience and features available in the web interface. To address the problem of format compatibility we have also developed a user-friendly R package, sceasy, which allows users to convert their own scRNAseq datasets into a specific data format for visualization.",
+		"container-title": "NAR Genomics and Bioinformatics",
+		"DOI": "10.1093/nargab/lqaa052",
+		"ISSN": "2631-9268",
+		"issue": "3",
+		"language": "en",
+		"license": "http://creativecommons.org/licenses/by/4.0/",
+		"page": "lqaa052",
+		"source": "DOI.org (Crossref)",
+		"title": "Comparison of visualization tools for single-cell RNAseq data",
+		"URL": "https://academic.oup.com/nargab/article/doi/10.1093/nargab/lqaa052/5877814",
+		"volume": "2",
+		"author": [
+			{
+				"family": "Cakir",
+				"given": "Batuhan"
+			},
+			{
+				"family": "Prete",
+				"given": "Martin"
+			},
+			{
+				"family": "Huang",
+				"given": "Ni"
+			},
+			{
+				"family": "van Dongen",
+				"given": "Stijn"
+			},
+			{
+				"family": "Pir",
+				"given": "Pinar"
+			},
+			{
+				"family": "Kiselev",
+				"given": "Vladimir Yu"
+			}
+		],
+		"accessed": {
+			"date-parts": [
+				[
+					"2025",
+					11,
+					19
+				]
+			]
+		},
+		"issued": {
+			"date-parts": [
+				[
+					"2020",
+					9,
+					1
+				]
+			]
+		}
+	}
+]

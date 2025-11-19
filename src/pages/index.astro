@@ -48,16 +48,25 @@ const figuresData = quotations
       : [quotation.Coding];
     const codeGuids = codingArray.map((c) => c.CodeRef.attrs.targetGUID);
     const codeNames = codeGuids.map((guid) => codeMap[guid]?.name || "Unknown");
+    
+    // Get source info including bibliography
+    const source = sourceMap[quotation.source_guid];
+    const bibliography = source?.bibliography;
 
     return {
       guid: quotation.attrs.guid,
       name: quotation.attrs.name,
       sourceGuid: quotation.source_guid,
-      sourceName: sourceMap[quotation.source_guid]?.name || "Unknown",
+      sourceName: source?.name || "Unknown",
       subfigNum: quotation.subfig_num,
       codes: codeNames,
       codeGuids: codeGuids,
       imagePath: `${BASE_URL}data/images/${quotation.source_guid}/${quotation.attrs.guid}.png`,
+      // Add bibliography fields
+      citation: bibliography?.citation || null,
+      paperTitle: bibliography?.title || null,
+      paperUrl: bibliography?.url || null,
+      year: bibliography?.year || null,
     };
   });
 ---
