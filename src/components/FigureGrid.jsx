@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../star-spatialsc/styles/FigureGrid.css";
+import "../styles/FigureGrid.css";
 
 export default function FigureGrid({ figures }) {
   const [selectedCodes, setSelectedCodes] = useState([]);
