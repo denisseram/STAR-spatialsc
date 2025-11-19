@@ -135,20 +135,11 @@ export default function FigureGrid({ figures }) {
                 <div key={fig.guid} className="figure-card">
                   <div className="figure-image-wrap">
                     <img
-                      src={new URL(
-                        `/data/images/${fig.sourceGuid}/${fig.guid}.png`,
-                        import.meta.env.BASE_URL
-                      ).href}
+                      src={fig.imagePath}
                       alt={fig.name}
                       className="figure-image"
                       onClick={() =>
-                        setModal({
-                          src: new URL(
-                            `/data/images/${fig.sourceGuid}/${fig.guid}.png`,
-                            import.meta.env.BASE_URL
-                          ).href,
-                          title: fig.name,
-                        })
+                        setModal({ src: fig.imagePath, title: fig.name })
                       }
                     />
                   </div>
