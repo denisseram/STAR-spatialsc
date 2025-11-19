@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import "../styles/FigureGrid.css";
 
-export default function FigureGrid({ figures }) {
+export default function FigureGrid({ figures = [] }) {
   const [selectedCodes, setSelectedCodes] = useState([]);
   const [modal, setModal] = useState(null);
 
-  // Deduplicate codes
-  const uniqueCodes = [...new Set(figures.flatMap((f) => f.codes))];
+  // Deduplicate codes (guard against missing `codes` arrays)
+  const uniqueCodes = [...new Set(figures.flatMap((f) => f.codes || []))];
 
   // Group codes Father -> Children
   const groupedCodes = {};
@@ -44,9 +44,11 @@ export default function FigureGrid({ figures }) {
 
   const clearAll = () => setSelectedCodes([]);
 
-  const filteredFigures = figures.filter((fig) =>
-    fig.codes.some((code) => selectedCodes.includes(code))
-  );
+  // If no codes are selected, show all figures. Otherwise filter by selected codes.
+  const filteredFigures =
+    selectedCodes.length === 0
+      ? figures
+      : figures.filter((fig) => (fig.codes || []).some((code) => selectedCodes.includes(code)));
 
   const parseFatherChild = (code) => {
     const parts = code.split(".");
