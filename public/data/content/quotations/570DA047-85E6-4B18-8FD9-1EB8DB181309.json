@@ -1,0 +1,103 @@
+{
+    "attrs": {
+        "firstX": "269",
+        "firstY": "602",
+        "modifyingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+        "creatingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+        "creationDateTime": "2025-11-19T16:12:33Z",
+        "modifiedDateTime": "2025-11-19T16:12:33Z",
+        "secondY": "736",
+        "secondX": "380",
+        "guid": "570DA047-85E6-4B18-8FD9-1EB8DB181309",
+        "name": "112\u2009\u00d7\u2009134",
+        "page": "5"
+    },
+    "Coding": [
+        {
+            "attrs": {
+                "creatingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+                "creationDateTime": "2025-11-19T16:12:33Z",
+                "guid": "94A1A28C-81B6-451C-AEC9-E9B104143056"
+            },
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "87B2C230-7192-4387-A502-9B0D4BB94B20"
+                }
+            }
+        },
+        {
+            "attrs": {
+                "creatingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+                "creationDateTime": "2025-11-19T16:12:35Z",
+                "guid": "B8651D2A-EBA7-43E1-9593-5FB110EC3F61"
+            },
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "ABA87644-93D4-45A0-8945-56F6D9757CCF"
+                }
+            }
+        },
+        {
+            "attrs": {
+                "creatingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+                "creationDateTime": "2025-11-20T13:38:13Z",
+                "guid": "2004F493-DCBE-42D1-8C47-FBEAF91CFF9B"
+            },
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "78FB551C-2D47-4FE8-9414-22085373C4B7"
+                }
+            }
+        },
+        {
+            "attrs": {
+                "creatingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+                "creationDateTime": "2025-11-20T13:38:16Z",
+                "guid": "16414DCF-D305-4D2F-84DA-287DCA6BC742"
+            },
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "28ADD511-5023-434D-8232-BDF221BE14C7"
+                }
+            }
+        },
+        {
+            "attrs": {
+                "creatingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+                "creationDateTime": "2025-11-19T16:12:37Z",
+                "guid": "6620F9CA-419F-4D62-AF51-FD2DC8F8DF79"
+            },
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "8413346B-40C4-47DB-95AC-63D35A14A2F5"
+                }
+            }
+        },
+        {
+            "attrs": {
+                "creatingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+                "creationDateTime": "2025-11-20T13:38:20Z",
+                "guid": "98FD5AB8-A69A-439F-A5E3-2F8A46ECA0F3"
+            },
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "B5D57837-34C8-43CA-956D-F88357BAF570"
+                }
+            }
+        },
+        {
+            "attrs": {
+                "creatingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+                "creationDateTime": "2025-11-20T13:38:22Z",
+                "guid": "3F254208-04B3-4E5E-A608-79B8085AA9E5"
+            },
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "D298A106-54F3-401A-B52B-8E4791816C01"
+                }
+            }
+        }
+    ],
+    "source_guid": "B0B843DB-DB8C-4739-BDA4-C069FC42652A",
+    "subfig_num": null
+}

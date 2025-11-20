@@ -146,5 +146,173 @@
 				]
 			]
 		}
+	},
+	{
+		"id": "http://zotero.org/users/17323078/items/TR5XNC7V",
+		"type": "article",
+		"abstract": "Abstract\n          \n            Summary\n            Spatial omics is a young and evolving field and as such shows rapid development of novel technologies and analysis methods to measure transcripts, proteins, metabolites, and post-translational modifications at high spatial resolution. These advances in technology have enabled the simultaneous generation of abundance profiles for multiple different omics types and associated microscopy imaging data, as well as their analysis in a spatial context. However, most analytical tools are designed for spatial transcriptomics platforms and are challenging to use in other contexts such as mass spectrometry-based measurements or metagenomics.\n            \n              To this end we present spammR (\n              sp\n              atial\n              a\n              nalysis of\n              m\n              ulti-omics\n              m\n              easurements in\n              R\n              ), an R package that enables end-to-end analysis with a specific focus on mass-spectrometry derived spatial omics datasets with (1) smaller sample sizes and spatial sparsity of samples, (2) considerable missingness, and (3) no a-priori knowledge about proteins or genes of interest, relying on a fully data-driven approach.\n            \n          \n          \n            Availability and implementation\n            \n              spammR is implemented in R. The package is currently installable from GitHub (\n              https://github.com/PNNL-CompBio/spammR\n              ).",
+		"DOI": "10.1101/2025.08.26.672472",
+		"language": "en",
+		"license": "http://creativecommons.org/licenses/by/4.0/",
+		"publisher": "Bioinformatics",
+		"source": "DOI.org (Crossref)",
+		"title": "spammR: an R package designed for analysis and integration of spatial multi-omic measurements",
+		"title-short": "spammR",
+		"URL": "http://biorxiv.org/lookup/doi/10.1101/2025.08.26.672472",
+		"author": [
+			{
+				"family": "Mahlich",
+				"given": "Yannick"
+			},
+			{
+				"family": "Sohi",
+				"given": "Harkirat"
+			},
+			{
+				"family": "Piehowski",
+				"given": "Paul"
+			},
+			{
+				"family": "McDermott",
+				"given": "Jason E"
+			},
+			{
+				"family": "Gosline",
+				"given": "Sara J"
+			}
+		],
+		"accessed": {
+			"date-parts": [
+				[
+					"2025",
+					11,
+					20
+				]
+			]
+		},
+		"issued": {
+			"date-parts": [
+				[
+					"2025",
+					8,
+					28
+				]
+			]
+		}
+	},
+	{
+		"id": "http://zotero.org/users/17323078/items/2DCXY7GX",
+		"type": "article-journal",
+		"abstract": "Abstract\n            Advances in spatial omics technologies now allow multiple types of data to be acquired from the same tissue slice. To realize the full potential of such data, we need spatially informed methods for data integration. Here, we introduce SpatialGlue, a graph neural network model with a dual-attention mechanism that deciphers spatial domains by intra-omics integration of spatial location and omics measurement followed by cross-omics integration. We demonstrated SpatialGlue on data acquired from different tissue types using different technologies, including spatial epigenome–transcriptome and transcriptome–proteome modalities. Compared to other methods, SpatialGlue captured more anatomical details and more accurately resolved spatial domains such as the cortex layers of the brain. Our method also identified cell types like spleen macrophage subsets located at three different zones that were not available in the original data annotations. SpatialGlue scales well with data size and can be used to integrate three modalities. Our spatial multi-omics analysis tool combines the information from complementary omics modalities to obtain a holistic view of cellular and tissue properties.",
+		"container-title": "Nature Methods",
+		"DOI": "10.1038/s41592-024-02316-4",
+		"ISSN": "1548-7091, 1548-7105",
+		"issue": "9",
+		"journalAbbreviation": "Nat Methods",
+		"language": "en",
+		"page": "1658-1667",
+		"source": "DOI.org (Crossref)",
+		"title": "Deciphering spatial domains from spatial multi-omics with SpatialGlue",
+		"URL": "https://www.nature.com/articles/s41592-024-02316-4",
+		"volume": "21",
+		"author": [
+			{
+				"family": "Long",
+				"given": "Yahui"
+			},
+			{
+				"family": "Ang",
+				"given": "Kok Siong"
+			},
+			{
+				"family": "Sethi",
+				"given": "Raman"
+			},
+			{
+				"family": "Liao",
+				"given": "Sha"
+			},
+			{
+				"family": "Heng",
+				"given": "Yang"
+			},
+			{
+				"family": "Van Olst",
+				"given": "Lynn"
+			},
+			{
+				"family": "Ye",
+				"given": "Shuchen"
+			},
+			{
+				"family": "Zhong",
+				"given": "Chengwei"
+			},
+			{
+				"family": "Xu",
+				"given": "Hang"
+			},
+			{
+				"family": "Zhang",
+				"given": "Di"
+			},
+			{
+				"family": "Kwok",
+				"given": "Immanuel"
+			},
+			{
+				"family": "Husna",
+				"given": "Nazihah"
+			},
+			{
+				"family": "Jian",
+				"given": "Min"
+			},
+			{
+				"family": "Ng",
+				"given": "Lai Guan"
+			},
+			{
+				"family": "Chen",
+				"given": "Ao"
+			},
+			{
+				"family": "Gascoigne",
+				"given": "Nicholas R. J."
+			},
+			{
+				"family": "Gate",
+				"given": "David"
+			},
+			{
+				"family": "Fan",
+				"given": "Rong"
+			},
+			{
+				"family": "Xu",
+				"given": "Xun"
+			},
+			{
+				"family": "Chen",
+				"given": "Jinmiao"
+			}
+		],
+		"accessed": {
+			"date-parts": [
+				[
+					"2025",
+					11,
+					20
+				]
+			]
+		},
+		"issued": {
+			"date-parts": [
+				[
+					"2024",
+					9
+				]
+			]
+		}
 	}
 ]

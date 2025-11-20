@@ -1,0 +1,67 @@
+{
+    "attrs": {
+        "firstX": "85",
+        "firstY": "47",
+        "modifyingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+        "creatingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+        "creationDateTime": "2025-11-20T13:16:05Z",
+        "modifiedDateTime": "2025-11-20T13:16:05Z",
+        "secondY": "164",
+        "secondX": "509",
+        "guid": "490857AC-BB2E-42D8-BDD7-57AF3FDEABB9",
+        "name": "424\u2009\u00d7\u2009117",
+        "page": "4"
+    },
+    "Coding": [
+        {
+            "attrs": {
+                "creatingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+                "creationDateTime": "2025-11-20T13:16:05Z",
+                "guid": "C9C711C0-3930-478F-84AA-4459A70FDA54"
+            },
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "28ADD511-5023-434D-8232-BDF221BE14C7"
+                }
+            }
+        },
+        {
+            "attrs": {
+                "creatingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+                "creationDateTime": "2025-11-20T13:16:13Z",
+                "guid": "F934DFD7-1A5B-4755-984E-5A78DE782675"
+            },
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "B5D57837-34C8-43CA-956D-F88357BAF570"
+                }
+            }
+        },
+        {
+            "attrs": {
+                "creatingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+                "creationDateTime": "2025-11-20T13:16:31Z",
+                "guid": "D47AC193-DEC5-4833-BBDD-6AA439B001AA"
+            },
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "1468618C-4239-497C-A1E9-0F581312833D"
+                }
+            }
+        },
+        {
+            "attrs": {
+                "creatingUser": "F7FD69DE-6E09-46D8-BE8A-EB04F87D15CE",
+                "creationDateTime": "2025-11-20T13:16:14Z",
+                "guid": "061E407F-6781-40D2-A79B-71A071DE0206"
+            },
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "D298A106-54F3-401A-B52B-8E4791816C01"
+                }
+            }
+        }
+    ],
+    "source_guid": "B0B843DB-DB8C-4739-BDA4-C069FC42652A",
+    "subfig_num": null
+}
