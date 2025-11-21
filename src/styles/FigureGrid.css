@@ -454,11 +454,11 @@ body {
 }
 
 .modal-image {
-    width: auto;
-    height: auto;
+    
+  display: block;
+  width: auto;
+  height: auto;
   max-width: 100%;
-  display: block
-  max-height: calc(95vh - 140px);
   object-fit: contain;
   border-radius: 4px;
 }
