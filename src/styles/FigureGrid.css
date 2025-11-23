@@ -456,7 +456,7 @@ body {
 .modal-image {
   display: block;
   max-width: 100%;
-  max-height: 100%;
+  max-height: calc(90vh - header - footer)
   width: auto;
   height: auto;
   object-fit: contain; /* preserve aspect ratio */
