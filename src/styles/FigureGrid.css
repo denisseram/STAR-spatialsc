@@ -445,21 +445,21 @@ body {
 }
 
 .modal-body {
-  padding: 20px;
-  overflow: auto; /* allows scrolling if needed */
+  flex: 1; /* take remaining space */
+  overflow: auto;
   display: flex;
   justify-content: center;
   align-items: center;
-  flex: 1;
+  padding: 20px;
 }
 
 .modal-image {
   display: block;
   max-width: 100%;
-  max-height: calc(90vh - header - footer)
+  max-height: 100%; /* fit inside modal-body */
   width: auto;
   height: auto;
-  object-fit: contain; /* preserve aspect ratio */
+  object-fit: contain;
   border-radius: 4px;
 }
 
