@@ -446,7 +446,7 @@ body {
 
 .modal-body {
   padding: 20px;
-  overflow: auto;
+  overflow: auto; /* allows scrolling if needed */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -454,11 +454,12 @@ body {
 }
 
 .modal-image {
-    
   display: block;
+  max-width: 100%;
+  max-height: 100%;
   width: auto;
   height: auto;
-  object-fit: contain;
+  object-fit: contain; /* preserve aspect ratio */
   border-radius: 4px;
 }
 
