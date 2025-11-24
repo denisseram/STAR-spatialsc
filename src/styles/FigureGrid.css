@@ -349,11 +349,19 @@ body {
 .code-button:hover {
     background: #f2f6fb;
 }
+
 .code-button.active {
     background: #FAAA12; /* yellow */
     color: white;
     border-color: #FAAA12;
     box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.code-button.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: #f0f0f0;
+  color: #999;
 }
 
 .figure-citation {

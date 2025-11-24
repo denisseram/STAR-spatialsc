@@ -56,11 +56,37 @@ export default function FigureGrid({ figures = [] }) {
 
   const clearAll = () => setSelectedCodes([]);
 
-  // If no codes are selected, show all figures. Otherwise filter by selected codes.
+  // If no codes are selected, show all figures. Otherwise filter by ALL selected codes (AND logic)
   const filteredFigures =
     selectedCodes.length === 0
       ? figures
-      : figures.filter((fig) => (fig.codes || []).some((code) => selectedCodes.includes(code)));
+      : figures.filter((fig) => 
+          selectedCodes.every((selectedCode) => (fig.codes || []).includes(selectedCode))
+        );
+
+  // Determine which codes are available (would not result in zero matches)
+  const availableCodes = new Set();
+  if (selectedCodes.length === 0) {
+    // If nothing is selected, all codes are available
+    uniqueCodes.forEach(code => availableCodes.add(code));
+  } else {
+    // Check which codes would still yield results if added to current selection
+    uniqueCodes.forEach((code) => {
+      if (selectedCodes.includes(code)) {
+        // Already selected codes are "available"
+        availableCodes.add(code);
+      } else {
+        // Test if adding this code would yield any results
+        const testSelection = [...selectedCodes, code];
+        const wouldHaveResults = figures.some((fig) =>
+          testSelection.every((selectedCode) => (fig.codes || []).includes(selectedCode))
+        );
+        if (wouldHaveResults) {
+          availableCodes.add(code);
+        }
+      }
+    });
+  }
 
   const parseFatherChild = (code) => {
     const parts = code.split(".");
@@ -111,11 +137,13 @@ export default function FigureGrid({ figures = [] }) {
                       {Array.from(hijos).map((hijo) => {
                         const fullCode = `${titulo}.${padre}.${hijo}`;
                         const active = selectedCodes.includes(fullCode);
+                        const disabled = !availableCodes.has(fullCode);
                         return (
                           <button
                             key={fullCode}
-                            className={`code-button ${active ? "active" : ""}`}
-                            onClick={() => toggleCode(fullCode)}
+                            className={`code-button ${active ? "active" : ""} ${disabled ? "disabled" : ""}`}
+                            onClick={() => !disabled && toggleCode(fullCode)}
+                            disabled={disabled}
                           >
                             {hijo}
                           </button>
@@ -135,11 +163,13 @@ export default function FigureGrid({ figures = [] }) {
               <div className="code-buttons">
                 {miscCodes.map((code) => {
                   const active = selectedCodes.includes(code);
+                  const disabled = !availableCodes.has(code);
                   return (
                     <button
                       key={code}
-                      className={`code-button ${active ? "active" : ""}`}
-                      onClick={() => toggleCode(code)}
+                      className={`code-button ${active ? "active" : ""} ${disabled ? "disabled" : ""}`}
+                      onClick={() => !disabled && toggleCode(code)}
+                      disabled={disabled}
                     >
                       {code}
                     </button>
