@@ -182,20 +182,33 @@ body {
   font-size: 12px;
   color: var(--muted);
 }
+
 .code-titulo-title {
   font-weight: bold;
   font-size: 15px;
-  color: #5d9afb;
+  color: #0e699d;
   margin-top: 1rem;
   margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #0e699d;
 }
 
 .code-padre-group {
   margin-left: 1rem;
   margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.code-padre-group:last-child {
+  border-bottom: none;
+}
+
+.code-padre-title {
   font-size: 13px;
   font-weight: bold;
   color: #374151;
+  margin-bottom: 0.5rem;
 }
 
 /* Codes Father.Child */

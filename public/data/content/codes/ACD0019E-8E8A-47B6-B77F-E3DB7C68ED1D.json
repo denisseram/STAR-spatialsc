@@ -1,5 +1,6 @@
 {
-    "guid": "ACD0019E-8E8A-47B6-B77F-E3DB7C68ED1D",
+    "color": "#46AA00",
+    "isCodable": "true",
     "name": "Biological Axis.Biological.Intercellular",
-    "isCodable": "true"
+    "guid": "ACD0019E-8E8A-47B6-B77F-E3DB7C68ED1D"
 }

@@ -1,5 +1,6 @@
 {
-    "guid": "48520116-40AC-44D3-8AEB-F48AFFE521F0",
+    "color": "#DC0000",
+    "isCodable": "true",
     "name": "Visualization.Comparative Design.Superposition",
-    "isCodable": "true"
+    "guid": "48520116-40AC-44D3-8AEB-F48AFFE521F0"
 }

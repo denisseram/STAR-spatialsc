@@ -1,5 +1,6 @@
 {
-    "guid": "8743FFC6-D1E7-4DCE-924A-149D7A09AA79",
+    "color": "#78909C",
+    "isCodable": "true",
     "name": "Visualization.Visual Encoding.Symbol",
-    "isCodable": "true"
+    "guid": "8743FFC6-D1E7-4DCE-924A-149D7A09AA79"
 }

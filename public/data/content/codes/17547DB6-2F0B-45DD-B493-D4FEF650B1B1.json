@@ -1,5 +1,6 @@
 {
-    "guid": "17547DB6-2F0B-45DD-B493-D4FEF650B1B1",
+    "color": "#78909C",
+    "isCodable": "true",
     "name": "Visualization.Visual Encoding.Color",
-    "isCodable": "true"
+    "guid": "17547DB6-2F0B-45DD-B493-D4FEF650B1B1"
 }

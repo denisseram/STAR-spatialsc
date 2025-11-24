@@ -1,5 +1,6 @@
 {
-    "guid": "7E6FEA8E-955F-48BB-BF2C-F7BD706A2C1B",
+    "color": "#E7DE11",
+    "isCodable": "true",
     "name": "Data.Data Components.Biological Annotation",
-    "isCodable": "true"
+    "guid": "7E6FEA8E-955F-48BB-BF2C-F7BD706A2C1B"
 }
