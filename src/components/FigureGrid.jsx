@@ -8,16 +8,26 @@ export default function FigureGrid({ figures = [] }) {
   // Deduplicate codes (guard against missing `codes` arrays)
   const uniqueCodes = [...new Set(figures.flatMap((f) => f.codes || []))];
 
-  // Group codes Father -> Children
+  // Group codes Titulo -> Padre -> Children
   const groupedCodes = {};
   const miscCodes = [];
 
   uniqueCodes.forEach((code) => {
-    if (code.includes(".")) {
-      const [father, child] = code.split(".");
-      if (!groupedCodes[father]) groupedCodes[father] = new Set();
-      groupedCodes[father].add(child);
+    const parts = code.split(".");
+    
+    if (parts.length === 3) {
+      // titulo.padre.hijo
+      const [titulo, padre, hijo] = parts;
+      if (!groupedCodes[titulo]) groupedCodes[titulo] = {};
+      if (!groupedCodes[titulo][padre]) groupedCodes[titulo][padre] = new Set();
+      groupedCodes[titulo][padre].add(hijo);
+    } else if (parts.length === 2) {
+      // titulo.padre (sin hijo)
+      const [titulo, padre] = parts;
+      if (!groupedCodes[titulo]) groupedCodes[titulo] = {};
+      if (!groupedCodes[titulo][padre]) groupedCodes[titulo][padre] = new Set();
     } else {
+      // código sin estructura jerárquica
       miscCodes.push(code);
     }
   });
@@ -34,8 +44,10 @@ export default function FigureGrid({ figures = [] }) {
 
   const selectAll = () => {
     const all = [
-      ...Object.entries(groupedCodes).flatMap(([father, children]) =>
-        Array.from(children).map((child) => `${father}.${child}`)
+      ...Object.entries(groupedCodes).flatMap(([titulo, padres]) =>
+        Object.entries(padres).flatMap(([padre, hijos]) =>
+          Array.from(hijos).map((hijo) => `${titulo}.${padre}.${hijo}`)
+        )
       ),
       ...miscCodes,
     ];
@@ -52,9 +64,21 @@ export default function FigureGrid({ figures = [] }) {
 
   const parseFatherChild = (code) => {
     const parts = code.split(".");
-    const father = parts[0] || "Unknown";
-    const child = parts.length > 1 ? parts.slice(1).join(".") : "";
-    return { father, child };
+    if (parts.length === 3) {
+      return { 
+        father: parts[1] || "Unknown", 
+        child: parts[2] || "" 
+      };
+    } else if (parts.length === 2) {
+      return { 
+        father: parts[0] || "Unknown", 
+        child: parts[1] || "" 
+      };
+    }
+    return { 
+      father: parts[0] || "Unknown", 
+      child: "" 
+    };
   };
 
   return (
@@ -75,25 +99,32 @@ export default function FigureGrid({ figures = [] }) {
             <button onClick={clearAll}>Clear</button>
           </div>
 
-          {/* Grouped Father.Child codes */}
-          {Object.entries(groupedCodes).map(([father, children]) => (
-            <div key={father} className="code-group">
-              <div className="code-father-title">{father}</div>
-              <div className="code-buttons">
-                {Array.from(children).map((child) => {
-                  const fullCode = `${father}.${child}`;
-                  const active = selectedCodes.includes(fullCode);
-                  return (
-                    <button
-                      key={fullCode}
-                      className={`code-button ${active ? "active" : ""}`}
-                      onClick={() => toggleCode(fullCode)}
-                    >
-                      {child}
-                    </button>
-                  );
-                })}
-              </div>
+          {/* Grouped Titulo -> Padre -> Hijo codes */}
+          {Object.entries(groupedCodes).map(([titulo, padres]) => (
+            <div key={titulo} className="code-group">
+              <div className="code-titulo-title">{titulo}</div>
+              {Object.entries(padres).map(([padre, hijos]) => (
+                <div key={`${titulo}.${padre}`} className="code-padre-group">
+                  <div className="code-padre-title">{padre}</div>
+                  {hijos.size > 0 && (
+                    <div className="code-buttons">
+                      {Array.from(hijos).map((hijo) => {
+                        const fullCode = `${titulo}.${padre}.${hijo}`;
+                        const active = selectedCodes.includes(fullCode);
+                        return (
+                          <button
+                            key={fullCode}
+                            className={`code-button ${active ? "active" : ""}`}
+                            onClick={() => toggleCode(fullCode)}
+                          >
+                            {hijo}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           ))}
 

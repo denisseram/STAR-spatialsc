@@ -182,6 +182,21 @@ body {
   font-size: 12px;
   color: var(--muted);
 }
+.code-titulo-title {
+  font-weight: bold;
+  font-size: 15px;
+  color: #5d9afb;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.code-padre-group {
+  margin-left: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 13px;
+  font-weight: bold;
+  color: #374151;
+}
 
 /* Codes Father.Child */
 .figure-codes {
@@ -242,7 +257,7 @@ body {
 .code-father-title {
   font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
+  color: #0e699d;
   margin-bottom: 6px;
   border-bottom: 1px solid var(--border);
   padding-bottom: 4px;

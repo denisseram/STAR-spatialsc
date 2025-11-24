@@ -314,5 +314,70 @@
 				]
 			]
 		}
+	},
+	{
+		"id": "http://zotero.org/users/17323078/items/CBPFWIP4",
+		"type": "article-journal",
+		"abstract": "Abstract\n            Visualizing spatial assay data in anatomical images is vital for understanding biological processes in cell, tissue, and organ organizations. Technologies requiring this functionality include traditional one-at-a-time assays, and bulk and single-cell omics experiments, including RNA-seq and proteomics. The spatialHeatmap software provides a series of powerful new methods for these needs, and allows users to work with adequately formatted anatomical images from public collections or custom images. It colors the spatial features (e.g. tissues) annotated in the images according to the measured or predicted abundance levels of biomolecules (e.g. mRNAs) using a color key. This core functionality of the package is called a spatial heatmap plot. Single-cell data can be co-visualized in composite plots that combine spatial heatmaps with embedding plots of high-dimensional data. The resulting spatial context information is essential for gaining insights into the tissue-level organization of single-cell data, or vice versa. Additional core functionalities include the automated identification of biomolecules with spatially selective abundance patterns and clusters of biomolecules sharing similar abundance profiles. To appeal to both non-expert and computational users, spatialHeatmap provides a graphical and a command-line interface, respectively. It is distributed as a free, open-source Bioconductor package (https://bioconductor.org/packages/spatialHeatmap) that users can install on personal computers, shared servers, or cloud systems.",
+		"container-title": "NAR Genomics and Bioinformatics",
+		"DOI": "10.1093/nargab/lqae006",
+		"ISSN": "2631-9268",
+		"issue": "1",
+		"language": "en",
+		"license": "https://creativecommons.org/licenses/by/4.0/",
+		"page": "lqae006",
+		"source": "DOI.org (Crossref)",
+		"title": "spatialHeatmap: visualizing spatial bulk and single-cell assays in anatomical images",
+		"title-short": "spatialHeatmap",
+		"URL": "https://academic.oup.com/nargab/article/doi/10.1093/nargab/lqae006/7597499",
+		"volume": "6",
+		"author": [
+			{
+				"family": "Zhang",
+				"given": "Jianhai"
+			},
+			{
+				"family": "Zhang",
+				"given": "Le"
+			},
+			{
+				"family": "Gongol",
+				"given": "Brendan"
+			},
+			{
+				"family": "Hayes",
+				"given": "Jordan"
+			},
+			{
+				"family": "Borowsky",
+				"given": "Alexander T"
+			},
+			{
+				"family": "Bailey-Serres",
+				"given": "Julia"
+			},
+			{
+				"family": "Girke",
+				"given": "Thomas"
+			}
+		],
+		"accessed": {
+			"date-parts": [
+				[
+					"2025",
+					11,
+					23
+				]
+			]
+		},
+		"issued": {
+			"date-parts": [
+				[
+					"2024",
+					1,
+					5
+				]
+			]
+		}
 	}
 ]
