@@ -161,13 +161,13 @@ export default function FigureGrid({ figures = [] }) {
     };
   };
 
-  // Flatten structure for horizontal layout by padre
-  const flattenedByPadre = useMemo(() => {
-    const result = [];
+  // Flatten structure for horizontal layout by padre, grouped by titulo
+  const groupedByTitulo = useMemo(() => {
+    const result = {};
     Object.entries(groupedCodes).forEach(([titulo, padres]) => {
+      result[titulo] = [];
       Object.entries(padres).forEach(([padre, hijos]) => {
-        result.push({
-          titulo,
+        result[titulo].push({
           padre,
           hijos: Array.from(hijos)
         });
@@ -255,12 +255,7 @@ export default function FigureGrid({ figures = [] }) {
               zIndex: 1
             }}>
               <defs>
-                {connections.map((path, idx) => (
-                  <linearGradient key={`gradient-${idx}`} id={`gradient-${idx}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor={colors[idx % colors.length]} stopOpacity="0.6" />
-                    <stop offset="100%" stopColor={colors[(idx + 2) % colors.length]} stopOpacity="0.6" />
-                  </linearGradient>
-                ))}
+                {/* No gradients needed - using solid colors per figure */}
               </defs>
               {connections.map((path, idx) => {
                 const { codes } = path;
@@ -315,12 +310,14 @@ export default function FigureGrid({ figures = [] }) {
 
                 if (!pathD) return null;
 
+                const color = colors[idx % colors.length];
+
                 return (
                   <g key={idx}>
                     <path
                       d={pathD}
                       fill="none"
-                      stroke={`url(#gradient-${idx})`}
+                      stroke={color}
                       strokeWidth={3}
                       opacity={0.7}
                     />
@@ -331,79 +328,90 @@ export default function FigureGrid({ figures = [] }) {
             </svg>
           )}
 
-          {/* Code buttons - horizontal layout by padre */}
-          <div style={{ display: "flex", gap: "2rem", overflowX: "auto", alignItems: "flex-start", position: "relative", zIndex: 2, paddingBottom: "1rem" }}>
-            {flattenedByPadre.map(({ titulo, padre, hijos }) => (
-              <div key={`${titulo}.${padre}`} style={{ minWidth: "180px", flex: "0 0 auto" }}>
+          {/* Code buttons - horizontal layout grouped by titulo */}
+          <div style={{ display: "flex", gap: "2.5rem", overflowX: "auto", alignItems: "flex-start", position: "relative", zIndex: 2, paddingBottom: "1rem" }}>
+            {Object.entries(groupedByTitulo).map(([titulo, padresArray]) => (
+              <div key={titulo} style={{ flex: "0 0 auto" }}>
+                {/* Titulo header spanning all padres */}
                 <div style={{
-                  fontSize: "0.85rem",
-                  fontWeight: "500",
-                  color: "#7f8c8d",
-                  marginBottom: "0.3rem",
+                  fontSize: "0.95rem",
+                  fontWeight: "bold",
+                  color: "#2c3e50",
+                  marginBottom: "0.8rem",
+                  borderBottom: "3px solid #3498db",
+                  paddingBottom: "0.5rem",
                   textTransform: "uppercase",
-                  letterSpacing: "0.5px"
+                  letterSpacing: "1px"
                 }}>
                   {titulo}
                 </div>
-                <div style={{
-                  fontWeight: "bold",
-                  fontSize: "1rem",
-                  marginBottom: "0.8rem",
-                  color: "#2c3e50",
-                  borderBottom: "2px solid #3498db",
-                  paddingBottom: "0.4rem"
-                }}>
-                  {padre}
+                
+                {/* Padres in horizontal layout */}
+                <div style={{ display: "flex", gap: "1.5rem" }}>
+                  {padresArray.map(({ padre, hijos }) => (
+                    <div key={padre} style={{ minWidth: "140px", flex: "0 0 auto" }}>
+                      <div style={{
+                        fontWeight: "600",
+                        fontSize: "0.85rem",
+                        marginBottom: "0.6rem",
+                        color: "#34495e",
+                        borderBottom: "1px solid #bdc3c7",
+                        paddingBottom: "0.3rem"
+                      }}>
+                        {padre}
+                      </div>
+                      {hijos.length > 0 && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                          {hijos.map((hijo) => {
+                            const fullCode = `${titulo}.${padre}.${hijo}`;
+                            const active = selectedCodes.includes(fullCode);
+                            const disabled = !availableCodes.has(fullCode);
+                            return (
+                              <button
+                                key={fullCode}
+                                ref={el => buttonRefs.current[fullCode] = el}
+                                onClick={() => !disabled && toggleCode(fullCode)}
+                                disabled={disabled}
+                                style={{
+                                  padding: "0.3rem 0.6rem",
+                                  fontSize: "0.75rem",
+                                  border: active ? "2px solid #3498db" : "1px solid #bdc3c7",
+                                  borderRadius: "3px",
+                                  backgroundColor: active ? "#3498db" : disabled ? "#ecf0f1" : "white",
+                                  color: active ? "white" : disabled ? "#95a5a6" : "#2c3e50",
+                                  cursor: disabled ? "not-allowed" : "pointer",
+                                  opacity: disabled ? 0.5 : 1,
+                                  transition: "all 0.2s",
+                                  textAlign: "left",
+                                  width: "100%",
+                                  whiteSpace: "nowrap"
+                                }}
+                              >
+                                {hijo}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                {hijos.length > 0 && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                    {hijos.map((hijo) => {
-                      const fullCode = `${titulo}.${padre}.${hijo}`;
-                      const active = selectedCodes.includes(fullCode);
-                      const disabled = !availableCodes.has(fullCode);
-                      return (
-                        <button
-                          key={fullCode}
-                          ref={el => buttonRefs.current[fullCode] = el}
-                          onClick={() => !disabled && toggleCode(fullCode)}
-                          disabled={disabled}
-                          style={{
-                            padding: "0.5rem 0.8rem",
-                            fontSize: "0.85rem",
-                            border: active ? "2px solid #3498db" : "1px solid #bdc3c7",
-                            borderRadius: "4px",
-                            backgroundColor: active ? "#3498db" : disabled ? "#ecf0f1" : "white",
-                            color: active ? "white" : disabled ? "#95a5a6" : "#2c3e50",
-                            cursor: disabled ? "not-allowed" : "pointer",
-                            opacity: disabled ? 0.5 : 1,
-                            transition: "all 0.2s",
-                            textAlign: "left",
-                            width: "100%",
-                            whiteSpace: "nowrap"
-                          }}
-                        >
-                          {hijo}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
             ))}
 
             {miscCodes.length > 0 && (
-              <div style={{ minWidth: "180px", flex: "0 0 auto" }}>
+              <div style={{ minWidth: "140px", flex: "0 0 auto" }}>
                 <div style={{
                   fontWeight: "bold",
-                  fontSize: "1rem",
-                  marginBottom: "0.8rem",
+                  fontSize: "0.85rem",
+                  marginBottom: "0.6rem",
                   color: "#2c3e50",
                   borderBottom: "2px solid #3498db",
                   paddingBottom: "0.4rem"
                 }}>
                   Miscellaneous
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                   {miscCodes.map((code) => {
                     const active = selectedCodes.includes(code);
                     const disabled = !availableCodes.has(code);
@@ -414,10 +422,10 @@ export default function FigureGrid({ figures = [] }) {
                         onClick={() => !disabled && toggleCode(code)}
                         disabled={disabled}
                         style={{
-                          padding: "0.5rem 0.8rem",
-                          fontSize: "0.85rem",
+                          padding: "0.3rem 0.6rem",
+                          fontSize: "0.75rem",
                           border: active ? "2px solid #3498db" : "1px solid #bdc3c7",
-                          borderRadius: "4px",
+                          borderRadius: "3px",
                           backgroundColor: active ? "#3498db" : disabled ? "#ecf0f1" : "white",
                           color: active ? "white" : disabled ? "#95a5a6" : "#2c3e50",
                           cursor: disabled ? "not-allowed" : "pointer",
@@ -451,7 +459,7 @@ export default function FigureGrid({ figures = [] }) {
             <strong>{figures.length}</strong> figures
             {showConnections && connections.length > 0 && (
               <span style={{ marginLeft: "1rem", color: "#7f8c8d" }}>
-                · {connections.length} connections
+                · {connections.length} paths
               </span>
             )}
           </div>
