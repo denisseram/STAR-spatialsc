@@ -93,6 +93,10 @@ export default function FigureGrid({ figures = [] }) {
           positions[code] = {
             x: buttonRect.left - containerRect.left + buttonRect.width / 2,
             y: buttonRect.top - containerRect.top + buttonRect.height / 2,
+            left: buttonRect.left - containerRect.left,
+            right: buttonRect.right - containerRect.left,
+            top: buttonRect.top - containerRect.top,
+            bottom: buttonRect.bottom - containerRect.top,
             width: buttonRect.width,
             height: buttonRect.height
           };
@@ -102,42 +106,41 @@ export default function FigureGrid({ figures = [] }) {
     };
 
     updatePositions();
+    const timer = setTimeout(updatePositions, 100);
     window.addEventListener('resize', updatePositions);
-    return () => window.removeEventListener('resize', updatePositions);
-  }, [groupedCodes, miscCodes]);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', updatePositions);
+    };
+  }, [groupedCodes, miscCodes, selectedCodes]);
 
-  // Generate connections between codes that appear together
+  // Generate connections - one path per figure connecting all its codes
   const connections = useMemo(() => {
     const relevantFigures = filteredFigures.length > 0 ? filteredFigures : figures;
-    const links = [];
-    const connectionCounts = new Map();
+    const paths = [];
 
-    relevantFigures.forEach(fig => {
-      const codes = fig.codes || [];
-      // Create connections between all pairs of codes in the same figure
-      for (let i = 0; i < codes.length; i++) {
-        for (let j = i + 1; j < codes.length; j++) {
-          const code1 = codes[i];
-          const code2 = codes[j];
-          const key = [code1, code2].sort().join('|||');
-          connectionCounts.set(key, (connectionCounts.get(key) || 0) + 1);
-        }
-      }
+    relevantFigures.forEach((fig, figIndex) => {
+      const codes = (fig.codes || []).filter(code => buttonPositions[code]);
+      if (codes.length < 2) return;
+
+      // Sort codes by their x position for a cleaner path
+      const sortedCodes = [...codes].sort((a, b) => 
+        buttonPositions[a].x - buttonPositions[b].x
+      );
+
+      paths.push({
+        figureId: fig.guid,
+        figureIndex: figIndex,
+        codes: sortedCodes,
+        citation: fig.citation || fig.name
+      });
     });
 
-    connectionCounts.forEach((count, key) => {
-      const [code1, code2] = key.split('|||');
-      if (buttonPositions[code1] && buttonPositions[code2]) {
-        links.push({
-          source: code1,
-          target: code2,
-          value: count
-        });
-      }
-    });
-
-    return links;
+    return paths;
   }, [filteredFigures, figures, buttonPositions]);
+
+  // Color palette for connections
+  const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#34495e'];
 
   const parseFatherChild = (code) => {
     const parts = code.split(".");
@@ -157,6 +160,21 @@ export default function FigureGrid({ figures = [] }) {
       child: "" 
     };
   };
+
+  // Flatten structure for horizontal layout by padre
+  const flattenedByPadre = useMemo(() => {
+    const result = [];
+    Object.entries(groupedCodes).forEach(([titulo, padres]) => {
+      Object.entries(padres).forEach(([padre, hijos]) => {
+        result.push({
+          titulo,
+          padre,
+          hijos: Array.from(hijos)
+        });
+      });
+    });
+    return result;
+  }, [groupedCodes]);
 
   return (
     <div style={{ width: "100%", minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
@@ -236,101 +254,152 @@ export default function FigureGrid({ figures = [] }) {
               pointerEvents: "none",
               zIndex: 1
             }}>
-              {connections.map((link, idx) => {
-                const source = buttonPositions[link.source];
-                const target = buttonPositions[link.target];
-                if (!source || !target) return null;
+              <defs>
+                {connections.map((path, idx) => (
+                  <linearGradient key={`gradient-${idx}`} id={`gradient-${idx}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor={colors[idx % colors.length]} stopOpacity="0.6" />
+                    <stop offset="100%" stopColor={colors[(idx + 2) % colors.length]} stopOpacity="0.6" />
+                  </linearGradient>
+                ))}
+              </defs>
+              {connections.map((path, idx) => {
+                const { codes } = path;
+                if (codes.length < 2) return null;
 
-                const maxValue = Math.max(...connections.map(c => c.value));
-                const opacity = 0.1 + (link.value / maxValue) * 0.4;
-                const strokeWidth = 1 + (link.value / maxValue) * 3;
+                // Create a path connecting all codes in order
+                let pathD = '';
+                
+                for (let i = 0; i < codes.length - 1; i++) {
+                  const source = buttonPositions[codes[i]];
+                  const target = buttonPositions[codes[i + 1]];
+                  
+                  if (!source || !target) continue;
+
+                  // Determine start and end points (edge of buttons)
+                  let x1, y1, x2, y2;
+                  
+                  // Source button edge point
+                  if (target.x > source.x) {
+                    x1 = source.right;
+                    y1 = source.y;
+                  } else {
+                    x1 = source.left;
+                    y1 = source.y;
+                  }
+
+                  // Target button edge point
+                  if (source.x > target.x) {
+                    x2 = target.right;
+                    y2 = target.y;
+                  } else {
+                    x2 = target.left;
+                    y2 = target.y;
+                  }
+
+                  // Create curved segment
+                  const dx = x2 - x1;
+                  const dy = y2 - y1;
+                  const distance = Math.sqrt(dx * dx + dy * dy);
+                  const curvature = Math.min(distance * 0.3, 100);
+                  
+                  const cx1 = x1 + dx * 0.3;
+                  const cy1 = y1 - curvature;
+                  const cx2 = x1 + dx * 0.7;
+                  const cy2 = y2 - curvature;
+
+                  if (i === 0) {
+                    pathD += `M ${x1} ${y1} `;
+                  }
+                  pathD += `C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2} `;
+                }
+
+                if (!pathD) return null;
 
                 return (
-                  <line
-                    key={idx}
-                    x1={source.x}
-                    y1={source.y}
-                    x2={target.x}
-                    y2={target.y}
-                    stroke="#3498db"
-                    strokeWidth={strokeWidth}
-                    strokeOpacity={opacity}
-                  />
+                  <g key={idx}>
+                    <path
+                      d={pathD}
+                      fill="none"
+                      stroke={`url(#gradient-${idx})`}
+                      strokeWidth={3}
+                      opacity={0.7}
+                    />
+                    <title>{path.citation}</title>
+                  </g>
                 );
               })}
             </svg>
           )}
 
-          {/* Code buttons in horizontal layout */}
-          <div style={{ display: "flex", gap: "2rem", overflowX: "auto", alignItems: "flex-start", position: "relative", zIndex: 2 }}>
-            {Object.entries(groupedCodes).map(([titulo, padres]) => (
-              <div key={titulo} style={{ minWidth: "200px", flex: "0 0 auto" }}>
+          {/* Code buttons - horizontal layout by padre */}
+          <div style={{ display: "flex", gap: "2rem", overflowX: "auto", alignItems: "flex-start", position: "relative", zIndex: 2, paddingBottom: "1rem" }}>
+            {flattenedByPadre.map(({ titulo, padre, hijos }) => (
+              <div key={`${titulo}.${padre}`} style={{ minWidth: "180px", flex: "0 0 auto" }}>
                 <div style={{
-                  fontWeight: "bold",
-                  fontSize: "1.1rem",
-                  marginBottom: "0.8rem",
-                  color: "#2c3e50",
-                  borderBottom: "2px solid #3498db",
-                  paddingBottom: "0.3rem"
+                  fontSize: "0.85rem",
+                  fontWeight: "500",
+                  color: "#7f8c8d",
+                  marginBottom: "0.3rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px"
                 }}>
                   {titulo}
                 </div>
-                {Object.entries(padres).map(([padre, hijos]) => (
-                  <div key={`${titulo}.${padre}`} style={{ marginBottom: "1.5rem" }}>
-                    <div style={{
-                      fontWeight: "600",
-                      fontSize: "0.95rem",
-                      marginBottom: "0.5rem",
-                      color: "#34495e"
-                    }}>
-                      {padre}
-                    </div>
-                    {hijos.size > 0 && (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                        {Array.from(hijos).map((hijo) => {
-                          const fullCode = `${titulo}.${padre}.${hijo}`;
-                          const active = selectedCodes.includes(fullCode);
-                          const disabled = !availableCodes.has(fullCode);
-                          return (
-                            <button
-                              key={fullCode}
-                              ref={el => buttonRefs.current[fullCode] = el}
-                              onClick={() => !disabled && toggleCode(fullCode)}
-                              disabled={disabled}
-                              style={{
-                                padding: "0.4rem 0.8rem",
-                                fontSize: "0.85rem",
-                                border: active ? "2px solid #3498db" : "1px solid #bdc3c7",
-                                borderRadius: "4px",
-                                backgroundColor: active ? "#3498db" : disabled ? "#ecf0f1" : "white",
-                                color: active ? "white" : disabled ? "#95a5a6" : "#2c3e50",
-                                cursor: disabled ? "not-allowed" : "pointer",
-                                opacity: disabled ? 0.5 : 1,
-                                transition: "all 0.2s",
-                                textAlign: "left",
-                                width: "100%"
-                              }}
-                            >
-                              {hijo}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
+                <div style={{
+                  fontWeight: "bold",
+                  fontSize: "1rem",
+                  marginBottom: "0.8rem",
+                  color: "#2c3e50",
+                  borderBottom: "2px solid #3498db",
+                  paddingBottom: "0.4rem"
+                }}>
+                  {padre}
+                </div>
+                {hijos.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                    {hijos.map((hijo) => {
+                      const fullCode = `${titulo}.${padre}.${hijo}`;
+                      const active = selectedCodes.includes(fullCode);
+                      const disabled = !availableCodes.has(fullCode);
+                      return (
+                        <button
+                          key={fullCode}
+                          ref={el => buttonRefs.current[fullCode] = el}
+                          onClick={() => !disabled && toggleCode(fullCode)}
+                          disabled={disabled}
+                          style={{
+                            padding: "0.5rem 0.8rem",
+                            fontSize: "0.85rem",
+                            border: active ? "2px solid #3498db" : "1px solid #bdc3c7",
+                            borderRadius: "4px",
+                            backgroundColor: active ? "#3498db" : disabled ? "#ecf0f1" : "white",
+                            color: active ? "white" : disabled ? "#95a5a6" : "#2c3e50",
+                            cursor: disabled ? "not-allowed" : "pointer",
+                            opacity: disabled ? 0.5 : 1,
+                            transition: "all 0.2s",
+                            textAlign: "left",
+                            width: "100%",
+                            whiteSpace: "nowrap"
+                          }}
+                        >
+                          {hijo}
+                        </button>
+                      );
+                    })}
                   </div>
-                ))}
+                )}
               </div>
             ))}
 
             {miscCodes.length > 0 && (
-              <div style={{ minWidth: "200px", flex: "0 0 auto" }}>
+              <div style={{ minWidth: "180px", flex: "0 0 auto" }}>
                 <div style={{
                   fontWeight: "bold",
-                  fontSize: "1.1rem",
+                  fontSize: "1rem",
                   marginBottom: "0.8rem",
                   color: "#2c3e50",
                   borderBottom: "2px solid #3498db",
-                  paddingBottom: "0.3rem"
+                  paddingBottom: "0.4rem"
                 }}>
                   Miscellaneous
                 </div>
@@ -345,7 +414,7 @@ export default function FigureGrid({ figures = [] }) {
                         onClick={() => !disabled && toggleCode(code)}
                         disabled={disabled}
                         style={{
-                          padding: "0.4rem 0.8rem",
+                          padding: "0.5rem 0.8rem",
                           fontSize: "0.85rem",
                           border: active ? "2px solid #3498db" : "1px solid #bdc3c7",
                           borderRadius: "4px",
