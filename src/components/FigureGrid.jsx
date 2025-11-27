@@ -187,12 +187,17 @@ export default function FigureGrid({ figures = [] }) {
               Showing <strong>{filteredFigures.length}</strong> of{" "}
               <strong>{figures.length}</strong> figures
             </div>
-            <button 
-              className="toggle-codes-button"
-              onClick={() => setShowCodes(!showCodes)}
-            >
-              {showCodes ? "Hide Codes" : "Show Codes"}
-            </button>
+            <div className="toggle-codes-container">
+              <span className="toggle-codes-label">Show Codes</span>
+              <label className="switch">
+                <input 
+                  type="checkbox" 
+                  checked={showCodes}
+                  onChange={() => setShowCodes(!showCodes)}
+                />
+                <span className="slider"></span>
+              </label>
+            </div>
           </div>
 
           {filteredFigures.length === 0 ? (
