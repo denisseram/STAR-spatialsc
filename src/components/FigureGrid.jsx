@@ -5,6 +5,7 @@ export default function FigureGrid({ figures = [] }) {
   const [selectedCodes, setSelectedCodes] = useState([]);
   const [modal, setModal] = useState(null);
   const [showCodes, setShowCodes] = useState(true);
+  const [filterMode, setFilterMode] = useState("AND"); // "AND" or "OR"
 
   // Deduplicate codes (guard against missing `codes` arrays)
   const uniqueCodes = [...new Set(figures.flatMap((f) => f.codes || []))];
@@ -57,12 +58,14 @@ export default function FigureGrid({ figures = [] }) {
 
   const clearAll = () => setSelectedCodes([]);
 
-  // If no codes are selected, show all figures. Otherwise filter by ALL selected codes (AND logic)
+  // If no codes are selected, show all figures. Otherwise filter based on filterMode
   const filteredFigures =
     selectedCodes.length === 0
       ? figures
       : figures.filter((fig) => 
-          selectedCodes.every((selectedCode) => (fig.codes || []).includes(selectedCode))
+          filterMode === "AND"
+            ? selectedCodes.every((selectedCode) => (fig.codes || []).includes(selectedCode))
+            : selectedCodes.some((selectedCode) => (fig.codes || []).includes(selectedCode))
         );
 
   // Determine which codes are available (would not result in zero matches)
@@ -80,7 +83,9 @@ export default function FigureGrid({ figures = [] }) {
         // Test if adding this code would yield any results
         const testSelection = [...selectedCodes, code];
         const wouldHaveResults = figures.some((fig) =>
-          testSelection.every((selectedCode) => (fig.codes || []).includes(selectedCode))
+          filterMode === "AND"
+            ? testSelection.every((selectedCode) => (fig.codes || []).includes(selectedCode))
+            : testSelection.some((selectedCode) => (fig.codes || []).includes(selectedCode))
         );
         if (wouldHaveResults) {
           availableCodes.add(code);
@@ -122,8 +127,24 @@ export default function FigureGrid({ figures = [] }) {
         <aside className="sidebar">
           <h2>Filter by Codes</h2>
           <div className="filter-controls">
-            <button onClick={selectAll}>Select All</button>
-            <button onClick={clearAll}>Clear</button>
+            <div className="filter-actions">
+              <button onClick={selectAll}>Select All</button>
+              <button onClick={clearAll}>Clear</button>
+            </div>
+            <div className="filter-mode">
+              <button 
+                className={`mode-button ${filterMode === "AND" ? "active" : ""}`}
+                onClick={() => setFilterMode("AND")}
+              >
+                AND
+              </button>
+              <button 
+                className={`mode-button ${filterMode === "OR" ? "active" : ""}`}
+                onClick={() => setFilterMode("OR")}
+              >
+                OR
+              </button>
+            </div>
           </div>
 
           {/* Grouped Titulo -> Padre -> Hijo codes */}
