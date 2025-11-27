@@ -4,6 +4,7 @@ import "../styles/FigureGrid.css";
 export default function FigureGrid({ figures = [] }) {
   const [selectedCodes, setSelectedCodes] = useState([]);
   const [modal, setModal] = useState(null);
+  const [showCodes, setShowCodes] = useState(true);
 
   // Deduplicate codes (guard against missing `codes` arrays)
   const uniqueCodes = [...new Set(figures.flatMap((f) => f.codes || []))];
@@ -186,6 +187,12 @@ export default function FigureGrid({ figures = [] }) {
               Showing <strong>{filteredFigures.length}</strong> of{" "}
               <strong>{figures.length}</strong> figures
             </div>
+            <button 
+              className="toggle-codes-button"
+              onClick={() => setShowCodes(!showCodes)}
+            >
+              {showCodes ? "Hide Codes" : "Show Codes"}
+            </button>
           </div>
 
           {filteredFigures.length === 0 ? (
@@ -237,30 +244,32 @@ export default function FigureGrid({ figures = [] }) {
                     )}
                     
                     {/* Codes */}
-                    <div className="figure-codes">
-                        {(() => {
-                            // Group codes by father
-                            const grouped = {};
-                            (fig.codes || []).forEach((code) => {
-                            const { father, child } = parseFatherChild(code);
-                            if (!grouped[father]) grouped[father] = [];
-                            if (child) grouped[father].push(child);
-                            });
+                    {showCodes && (
+                      <div className="figure-codes">
+                          {(() => {
+                              // Group codes by father
+                              const grouped = {};
+                              (fig.codes || []).forEach((code) => {
+                              const { father, child } = parseFatherChild(code);
+                              if (!grouped[father]) grouped[father] = [];
+                              if (child) grouped[father].push(child);
+                              });
 
-                            return Object.entries(grouped).map(([father, children]) => (
-                            <div key={father} className="code-block">
-                                <div className="code-father">{father}</div>
-                                {children.length > 0 && (
-                                <div className="code-children">
-                                    {children.map((child) => (
-                                    <span key={child} className="code-child">{child}</span>
-                                    ))}
-                                </div>
-                                )}
-                            </div>
-                            ));
-                        })()}
-                    </div>
+                              return Object.entries(grouped).map(([father, children]) => (
+                              <div key={father} className="code-block">
+                                  <div className="code-father">{father}</div>
+                                  {children.length > 0 && (
+                                  <div className="code-children">
+                                      {children.map((child) => (
+                                      <span key={child} className="code-child">{child}</span>
+                                      ))}
+                                  </div>
+                                  )}
+                              </div>
+                              ));
+                          })()}
+                      </div>
+                    )}
 
                     
                     {/* Link Button */}

@@ -120,7 +120,7 @@ body {
 .figures-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 22px;
+  gap: 8px;
 }
 
 .figure-card {
@@ -246,8 +246,8 @@ body {
 .code-child {
   font-size: 12px;
   color: var(--primary);
-  background: var(--primary-bg);
-  padding: 4px 8px;
+  background: #0e699d2c;
+  padding: 5px 8px;
   border-radius: 8px;
   display: flex;
   flex-wrap: wrap; 
@@ -531,4 +531,18 @@ body {
 
 .figure-image:hover {
   opacity: 0.9;
+}
+
+.toggle-codes-button {
+  padding: 6px 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.toggle-codes-button:hover {
+  background: #0056b3;
 }
