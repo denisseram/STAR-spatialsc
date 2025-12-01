@@ -82,6 +82,7 @@ body {
 .filter-controls button:hover {
   background: #f3f4f6;
   border-color: #d1d5db;
+  color: black;
 }
 
 .code-filter {
@@ -97,6 +98,7 @@ body {
 
 .code-filter:hover {
   background: #f9fafb;
+  color: black
 }
 
 .code-filter input[type="checkbox"] {
@@ -642,6 +644,7 @@ input:checked + .slider:before {
 
 .mode-button:hover {
   background: #e0e0e0;
+  color: black;
 }
 
 .mode-button.active {
