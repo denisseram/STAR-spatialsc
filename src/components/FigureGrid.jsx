@@ -16,23 +16,30 @@ export default function FigureGrid({ figures = [] }) {
 
   uniqueCodes.forEach((code) => {
     const parts = code.split(".");
-    
-    if (parts.length === 3) {
+
+    if (parts.length === 4) {
+      // titulo.padre.hijo.grandchild
+      const [titulo, padre, hijo, grandchild] = parts;
+      if (!groupedCodes[titulo]) groupedCodes[titulo] = {};
+      if (!groupedCodes[titulo][padre]) groupedCodes[titulo][padre] = {};
+      if (!groupedCodes[titulo][padre][hijo]) groupedCodes[titulo][padre][hijo] = new Set();
+      groupedCodes[titulo][padre][hijo].add(grandchild);
+    } else if (parts.length === 3) {
       // titulo.padre.hijo
       const [titulo, padre, hijo] = parts;
       if (!groupedCodes[titulo]) groupedCodes[titulo] = {};
       if (!groupedCodes[titulo][padre]) groupedCodes[titulo][padre] = new Set();
       groupedCodes[titulo][padre].add(hijo);
     } else if (parts.length === 2) {
-      // titulo.padre (sin hijo)
+      // titulo.padre
       const [titulo, padre] = parts;
       if (!groupedCodes[titulo]) groupedCodes[titulo] = {};
       if (!groupedCodes[titulo][padre]) groupedCodes[titulo][padre] = new Set();
     } else {
-      // código sin estructura jerárquica
       miscCodes.push(code);
     }
   });
+
 
   //  Count papers (unique sources) and figures
   const totalFigures = figures.length;
@@ -154,7 +161,9 @@ export default function FigureGrid({ figures = [] }) {
               {Object.entries(padres).map(([padre, hijos]) => (
                 <div key={`${titulo}.${padre}`} className="code-padre-group">
                   <div className="code-padre-title">{padre}</div>
-                  {hijos.size > 0 && (
+
+                  {/* Case: hijos is a Set (normal 3-level) */}
+                  {hijos instanceof Set && hijos.size > 0 && (
                     <div className="code-buttons">
                       {Array.from(hijos).map((hijo) => {
                         const fullCode = `${titulo}.${padre}.${hijo}`;
@@ -173,10 +182,36 @@ export default function FigureGrid({ figures = [] }) {
                       })}
                     </div>
                   )}
+
+                  {/* Case: hijos is an object (4-level hierarchy) */}
+                  {!(hijos instanceof Set) &&
+                    Object.entries(hijos).map(([hijo, grandchildren]) => (
+                      <div key={`${titulo}.${padre}.${hijo}`} className="code-hijo-group">
+                        <div className="code-hijo-title">{hijo}</div>
+                        <div className="code-grandchildren-buttons">
+                          {Array.from(grandchildren).map((grandchild) => {
+                            const fullCode = `${titulo}.${padre}.${hijo}.${grandchild}`;
+                            const active = selectedCodes.includes(fullCode);
+                            const disabled = !availableCodes.has(fullCode);
+                            return (
+                              <button
+                                key={fullCode}
+                                className={`code-button small ${active ? "active" : ""} ${disabled ? "disabled" : ""}`}
+                                onClick={() => !disabled && toggleCode(fullCode)}
+                                disabled={disabled}
+                              >
+                                {grandchild}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                 </div>
               ))}
             </div>
           ))}
+
 
           {/* Miscellaneous codes */}
           {miscCodes.length > 0 && (
