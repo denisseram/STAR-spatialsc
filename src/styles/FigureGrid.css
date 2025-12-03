@@ -652,3 +652,15 @@ input:checked + .slider:before {
   color: white;
   border-color: #FAAA12;
 }
+
+.code-grandchildren-buttons {
+  margin-left: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.code-button.small {
+  font-size: 0.8em;
+  padding: 2px 6px;
+}
