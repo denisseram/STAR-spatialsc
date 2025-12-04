@@ -13,11 +13,15 @@ export default function FigureGrid({ figures = [] }) {
   // Group codes Titulo -> Padre -> Children
   const groupedCodes = {};
   const miscCodes = [];
+  const singleLevelCodes = []; // Codes without dots (level 1)
 
   uniqueCodes.forEach((code) => {
     const parts = code.split(".");
 
-    if (parts.length === 4) {
+    if (parts.length === 1) {
+      // Single level code - add to word cloud array
+      singleLevelCodes.push(code);
+    } else if (parts.length === 4) {
       // titulo.padre.hijo.grandchild
       const [titulo, padre, hijo, grandchild] = parts;
       if (!groupedCodes[titulo]) groupedCodes[titulo] = {};
@@ -39,7 +43,6 @@ export default function FigureGrid({ figures = [] }) {
       miscCodes.push(code);
     }
   });
-
 
   //  Count papers (unique sources) and figures
   const totalFigures = figures.length;
