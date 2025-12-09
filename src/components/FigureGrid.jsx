@@ -1,192 +1,389 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import "../styles/FigureGrid.css";
 
+// Constants
+const FILTER_MODES = {
+  AND: "AND",
+  OR: "OR"
+};
+
+const CODE_LEVELS = {
+  SINGLE: 1,
+  DOUBLE: 2,
+  TRIPLE: 3,
+  QUADRUPLE: 4
+};
+
+// Helper functions
+const parseCode = (code) => {
+  const parts = code.split(".");
+  
+  if (parts.length === CODE_LEVELS.TRIPLE) {
+    return { 
+      father: parts[1] || "Unknown", 
+      child: parts[2] || "" 
+    };
+  }
+  
+  if (parts.length === CODE_LEVELS.DOUBLE) {
+    return { 
+      father: parts[0] || "Unknown", 
+      child: parts[1] || "" 
+    };
+  }
+  
+  return { 
+    father: parts[0] || "Unknown", 
+    child: "" 
+  };
+};
+
+const groupCodesByHierarchy = (codes) => {
+  const grouped = {};
+  const misc = [];
+  const single = [];
+
+  codes.forEach((code) => {
+    const parts = code.split(".");
+    const length = parts.length;
+
+    if (length === CODE_LEVELS.SINGLE) {
+      single.push(code);
+      return;
+    }
+
+    if (length === CODE_LEVELS.QUADRUPLE) {
+      const [titulo, padre, hijo, grandchild] = parts;
+      if (!grouped[titulo]) grouped[titulo] = {};
+      if (!grouped[titulo][padre]) grouped[titulo][padre] = {};
+      if (!grouped[titulo][padre][hijo]) grouped[titulo][padre][hijo] = new Set();
+      grouped[titulo][padre][hijo].add(grandchild);
+      return;
+    }
+
+    if (length === CODE_LEVELS.TRIPLE) {
+      const [titulo, padre, hijo] = parts;
+      if (!grouped[titulo]) grouped[titulo] = {};
+      if (!grouped[titulo][padre]) grouped[titulo][padre] = new Set();
+      grouped[titulo][padre].add(hijo);
+      return;
+    }
+
+    if (length === CODE_LEVELS.DOUBLE) {
+      const [titulo, padre] = parts;
+      if (!grouped[titulo]) grouped[titulo] = {};
+      if (!grouped[titulo][padre]) grouped[titulo][padre] = new Set();
+      return;
+    }
+
+    misc.push(code);
+  });
+
+  return { grouped, misc, single };
+};
+
+const filterFigures = (figures, selectedCodes, filterMode) => {
+  if (selectedCodes.length === 0) return figures;
+
+  return figures.filter((fig) => {
+    const figCodes = fig.codes || [];
+    
+    if (filterMode === FILTER_MODES.AND) {
+      return selectedCodes.every((code) => figCodes.includes(code));
+    }
+    
+    return selectedCodes.some((code) => figCodes.includes(code));
+  });
+};
+
+const calculateAvailableCodes = (figures, uniqueCodes, selectedCodes, filterMode) => {
+  const available = new Set();
+
+  if (selectedCodes.length === 0) {
+    uniqueCodes.forEach(code => available.add(code));
+    return available;
+  }
+
+  uniqueCodes.forEach((code) => {
+    if (selectedCodes.includes(code)) {
+      available.add(code);
+      return;
+    }
+
+    const testSelection = [...selectedCodes, code];
+    const hasResults = figures.some((fig) => {
+      const figCodes = fig.codes || [];
+      
+      if (filterMode === FILTER_MODES.AND) {
+        return testSelection.every((selectedCode) => figCodes.includes(selectedCode));
+      }
+      
+      return testSelection.some((selectedCode) => figCodes.includes(selectedCode));
+    });
+
+    if (hasResults) {
+      available.add(code);
+    }
+  });
+
+  return available;
+};
+
+// Sub-components
+const CodeButton = ({ code, isActive, isDisabled, onClick, isSmall = false }) => (
+  <button
+    className={`code-button ${isSmall ? "small" : ""} ${isActive ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
+    onClick={onClick}
+    disabled={isDisabled}
+  >
+    {code}
+  </button>
+);
+
+const FigureCard = ({ figure, showCodes, onImageClick }) => {
+  const groupedCodes = useMemo(() => {
+    const grouped = {};
+    (figure.codes || []).forEach((code) => {
+      const { father, child } = parseCode(code);
+      if (!grouped[father]) grouped[father] = [];
+      if (child) grouped[father].push(child);
+    });
+    return grouped;
+  }, [figure.codes]);
+
+  return (
+    <div className="figure-card">
+      <div className="figure-image-wrap">
+        <img
+          src={figure.imagePath}
+          alt={figure.name}
+          className="figure-image"
+          onClick={onImageClick}
+        />
+      </div>
+      
+      <div className="figure-info">
+        {figure.citation && (
+          <div 
+            className="figure-citation"
+            dangerouslySetInnerHTML={{
+              __html: figure.citation.replace(/et al\./g, '<em>et al.</em>')
+            }}
+          />
+        )}
+        
+        {figure.paperTitle && (
+          <div className="figure-paper-title">{figure.paperTitle}</div>
+        )}
+        
+        {!figure.citation && (
+          <>
+            <div className="figure-title">{figure.name}</div>
+            <div className="figure-source">{figure.sourceName}</div>
+          </>
+        )}
+        
+        {showCodes && (
+          <div className="figure-codes">
+            {Object.entries(groupedCodes).map(([father, children]) => (
+              <div key={father} className="code-block">
+                <div className="code-father">{father}</div>
+                {children.length > 0 && (
+                  <div className="code-children">
+                    {children.map((child) => (
+                      <span key={child} className="code-child">{child}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {figure.paperUrl && (
+          <div className="paper-link-container">
+            <a 
+              href={figure.paperUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="paper-link-button"
+            >
+              Link
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const Modal = ({ modal, onClose }) => {
+  if (!modal) return null;
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <div className="modal-title">
+            {modal.citation && (
+              <span 
+                dangerouslySetInnerHTML={{
+                  __html: modal.citation.replace(/et al\./g, '<em>et al.</em>')
+                }}
+              />
+            )}
+            {modal.paperTitle && ` - ${modal.paperTitle}`}
+          </div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        
+        <div className="modal-body">
+          <img src={modal.src} alt={modal.title} className="modal-image" />
+        </div>
+        
+        {modal.paperUrl && (
+          <div className="modal-footer">
+            <a 
+              href={modal.paperUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="modal-link-button"
+            >
+              View Paper
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Main component
 export default function FigureGrid({ figures = [] }) {
   const [selectedCodes, setSelectedCodes] = useState([]);
   const [modal, setModal] = useState(null);
   const [showCodes, setShowCodes] = useState(true);
-  const [filterMode, setFilterMode] = useState("AND"); // "AND" or "OR"
+  const [filterMode, setFilterMode] = useState(FILTER_MODES.AND);
 
-  // Deduplicate codes (guard against missing `codes` arrays)
-  const uniqueCodes = [...new Set(figures.flatMap((f) => f.codes || []))];
+  // Memoized calculations
+  const uniqueCodes = useMemo(
+    () => [...new Set(figures.flatMap((f) => f.codes || []))],
+    [figures]
+  );
 
-  // Group codes Titulo -> Padre -> Children
-  const groupedCodes = {};
-  const miscCodes = [];
-  const singleLevelCodes = []; // Codes without dots (level 1)
+  const { grouped: groupedCodes, misc: miscCodes, single: singleLevelCodes } = useMemo(
+    () => groupCodesByHierarchy(uniqueCodes),
+    [uniqueCodes]
+  );
 
-  uniqueCodes.forEach((code) => {
-    const parts = code.split(".");
+  const stats = useMemo(() => ({
+    totalFigures: figures.length,
+    totalPapers: new Set(figures.map((f) => f.sourceGuid)).size
+  }), [figures]);
 
-    if (parts.length === 1) {
-      // Single level code - add to word cloud array
-      singleLevelCodes.push(code);
-    } else if (parts.length === 4) {
-      // titulo.padre.hijo.grandchild
-      const [titulo, padre, hijo, grandchild] = parts;
-      if (!groupedCodes[titulo]) groupedCodes[titulo] = {};
-      if (!groupedCodes[titulo][padre]) groupedCodes[titulo][padre] = {};
-      if (!groupedCodes[titulo][padre][hijo]) groupedCodes[titulo][padre][hijo] = new Set();
-      groupedCodes[titulo][padre][hijo].add(grandchild);
-    } else if (parts.length === 3) {
-      // titulo.padre.hijo
-      const [titulo, padre, hijo] = parts;
-      if (!groupedCodes[titulo]) groupedCodes[titulo] = {};
-      if (!groupedCodes[titulo][padre]) groupedCodes[titulo][padre] = new Set();
-      groupedCodes[titulo][padre].add(hijo);
-    } else if (parts.length === 2) {
-      // titulo.padre
-      const [titulo, padre] = parts;
-      if (!groupedCodes[titulo]) groupedCodes[titulo] = {};
-      if (!groupedCodes[titulo][padre]) groupedCodes[titulo][padre] = new Set();
-    } else {
-      miscCodes.push(code);
-    }
-  });
+  const filteredFigures = useMemo(
+    () => filterFigures(figures, selectedCodes, filterMode),
+    [figures, selectedCodes, filterMode]
+  );
 
-  //  Count papers (unique sources) and figures
-  const totalFigures = figures.length;
-  const totalPapers = new Set(figures.map((f) => f.sourceGuid)).size;
+  const availableCodes = useMemo(
+    () => calculateAvailableCodes(figures, uniqueCodes, selectedCodes, filterMode),
+    [figures, uniqueCodes, selectedCodes, filterMode]
+  );
 
-  const toggleCode = (code) => {
+  // Event handlers
+  const toggleCode = useCallback((code) => {
     setSelectedCodes((prev) =>
       prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
     );
-  };
+  }, []);
 
-  const selectAll = () => {
-    const all = [
+  const selectAll = useCallback(() => {
+    const allCodes = [
       ...Object.entries(groupedCodes).flatMap(([titulo, padres]) =>
         Object.entries(padres).flatMap(([padre, hijos]) =>
           Array.from(hijos).map((hijo) => `${titulo}.${padre}.${hijo}`)
         )
       ),
-      ...miscCodes,
+      ...miscCodes
     ];
-    setSelectedCodes(all);
-  };
+    setSelectedCodes(allCodes);
+  }, [groupedCodes, miscCodes]);
 
-  const clearAll = () => setSelectedCodes([]);
+  const clearAll = useCallback(() => setSelectedCodes([]), []);
 
-  // If no codes are selected, show all figures. Otherwise filter based on filterMode
-  const filteredFigures =
-    selectedCodes.length === 0
-      ? figures
-      : figures.filter((fig) => 
-          filterMode === "AND"
-            ? selectedCodes.every((selectedCode) => (fig.codes || []).includes(selectedCode))
-            : selectedCodes.some((selectedCode) => (fig.codes || []).includes(selectedCode))
-        );
-
-  // Determine which codes are available (would not result in zero matches)
-  const availableCodes = new Set();
-  if (selectedCodes.length === 0) {
-    // If nothing is selected, all codes are available
-    uniqueCodes.forEach(code => availableCodes.add(code));
-  } else {
-    // Check which codes would still yield results if added to current selection
-    uniqueCodes.forEach((code) => {
-      if (selectedCodes.includes(code)) {
-        // Already selected codes are "available"
-        availableCodes.add(code);
-      } else {
-        // Test if adding this code would yield any results
-        const testSelection = [...selectedCodes, code];
-        const wouldHaveResults = figures.some((fig) =>
-          filterMode === "AND"
-            ? testSelection.every((selectedCode) => (fig.codes || []).includes(selectedCode))
-            : testSelection.some((selectedCode) => (fig.codes || []).includes(selectedCode))
-        );
-        if (wouldHaveResults) {
-          availableCodes.add(code);
-        }
-      }
+  const handleImageClick = useCallback((figure) => {
+    setModal({
+      src: figure.imagePath,
+      title: figure.name,
+      citation: figure.citation,
+      paperTitle: figure.paperTitle,
+      paperUrl: figure.paperUrl
     });
-  }
+  }, []);
 
-  const parseFatherChild = (code) => {
-    const parts = code.split(".");
-    if (parts.length === 3) {
-      return { 
-        father: parts[1] || "Unknown", 
-        child: parts[2] || "" 
-      };
-    } else if (parts.length === 2) {
-      return { 
-        father: parts[0] || "Unknown", 
-        child: parts[1] || "" 
-      };
-    }
-    return { 
-      father: parts[0] || "Unknown", 
-      child: "" 
-    };
-  };
+  const closeModal = useCallback(() => setModal(null), []);
 
   return (
     <div className="page">
-      {/* Sticky top bar */}
       <header className="topbar">
         <h1 className="topbar-title">Spatial Transcriptomics Survey</h1>
         <p className="topbar-subtitle">
-          {totalPapers} papers · {totalFigures} figures
+          {stats.totalPapers} papers · {stats.totalFigures} figures
         </p>
       </header>
 
       <div className="container">
         <aside className="sidebar">
           <h2>Filter by Codes</h2>
+          
           <div className="filter-controls">
             <div className="filter-actions">
               <button onClick={selectAll}>Select All</button>
               <button onClick={clearAll}>Clear</button>
             </div>
+            
             <div className="filter-mode">
               <button 
-                className={`mode-button ${filterMode === "AND" ? "active" : ""}`}
-                onClick={() => setFilterMode("AND")}
+                className={`mode-button ${filterMode === FILTER_MODES.AND ? "active" : ""}`}
+                onClick={() => setFilterMode(FILTER_MODES.AND)}
               >
                 AND
               </button>
               <button 
-                className={`mode-button ${filterMode === "OR" ? "active" : ""}`}
-                onClick={() => setFilterMode("OR")}
+                className={`mode-button ${filterMode === FILTER_MODES.OR ? "active" : ""}`}
+                onClick={() => setFilterMode(FILTER_MODES.OR)}
               >
                 OR
               </button>
             </div>
           </div>
 
-          {/* Grouped Titulo -> Padre -> Hijo codes */}
           {Object.entries(groupedCodes).map(([titulo, padres]) => (
             <div key={titulo} className="code-group">
               <div className="code-titulo-title">{titulo}</div>
+              
               {Object.entries(padres).map(([padre, hijos]) => (
                 <div key={`${titulo}.${padre}`} className="code-padre-group">
                   <div className="code-padre-title">{padre}</div>
 
-                  {/* Case: hijos is a Set (normal 3-level) */}
                   {hijos instanceof Set && hijos.size > 0 && (
                     <div className="code-buttons">
                       {Array.from(hijos).map((hijo) => {
                         const fullCode = `${titulo}.${padre}.${hijo}`;
-                        const active = selectedCodes.includes(fullCode);
-                        const disabled = !availableCodes.has(fullCode);
                         return (
-                          <button
+                          <CodeButton
                             key={fullCode}
-                            className={`code-button ${active ? "active" : ""} ${disabled ? "disabled" : ""}`}
-                            onClick={() => !disabled && toggleCode(fullCode)}
-                            disabled={disabled}
-                          >
-                            {hijo}
-                          </button>
+                            code={hijo}
+                            isActive={selectedCodes.includes(fullCode)}
+                            isDisabled={!availableCodes.has(fullCode)}
+                            onClick={() => toggleCode(fullCode)}
+                          />
                         );
                       })}
                     </div>
                   )}
 
-                  {/* Case: hijos is an object (4-level hierarchy) */}
                   {!(hijos instanceof Set) &&
                     Object.entries(hijos).map(([hijo, grandchildren]) => (
                       <div key={`${titulo}.${padre}.${hijo}`} className="code-hijo-group">
@@ -194,17 +391,15 @@ export default function FigureGrid({ figures = [] }) {
                         <div className="code-grandchildren-buttons">
                           {Array.from(grandchildren).map((grandchild) => {
                             const fullCode = `${titulo}.${padre}.${hijo}.${grandchild}`;
-                            const active = selectedCodes.includes(fullCode);
-                            const disabled = !availableCodes.has(fullCode);
                             return (
-                              <button
+                              <CodeButton
                                 key={fullCode}
-                                className={`code-button small ${active ? "active" : ""} ${disabled ? "disabled" : ""}`}
-                                onClick={() => !disabled && toggleCode(fullCode)}
-                                disabled={disabled}
-                              >
-                                {grandchild}
-                              </button>
+                                code={grandchild}
+                                isActive={selectedCodes.includes(fullCode)}
+                                isDisabled={!availableCodes.has(fullCode)}
+                                onClick={() => toggleCode(fullCode)}
+                                isSmall
+                              />
                             );
                           })}
                         </div>
@@ -215,26 +410,19 @@ export default function FigureGrid({ figures = [] }) {
             </div>
           ))}
 
-
-          {/* Miscellaneous codes */}
           {miscCodes.length > 0 && (
             <div className="code-group">
               <div className="code-father-title">Miscellaneous</div>
               <div className="code-buttons">
-                {miscCodes.map((code) => {
-                  const active = selectedCodes.includes(code);
-                  const disabled = !availableCodes.has(code);
-                  return (
-                    <button
-                      key={code}
-                      className={`code-button ${active ? "active" : ""} ${disabled ? "disabled" : ""}`}
-                      onClick={() => !disabled && toggleCode(code)}
-                      disabled={disabled}
-                    >
-                      {code}
-                    </button>
-                  );
-                })}
+                {miscCodes.map((code) => (
+                  <CodeButton
+                    key={code}
+                    code={code}
+                    isActive={selectedCodes.includes(code)}
+                    isDisabled={!availableCodes.has(code)}
+                    onClick={() => toggleCode(code)}
+                  />
+                ))}
               </div>
             </div>
           )}
@@ -246,6 +434,7 @@ export default function FigureGrid({ figures = [] }) {
               Showing <strong>{filteredFigures.length}</strong> of{" "}
               <strong>{figures.length}</strong> figures
             </div>
+            
             <div className="toggle-codes-container">
               <span className="toggle-codes-label">Show Codes</span>
               <label className="switch">
@@ -266,133 +455,19 @@ export default function FigureGrid({ figures = [] }) {
           ) : (
             <div className="figures-grid">
               {filteredFigures.map((fig) => (
-                <div key={fig.guid} className="figure-card">
-                  <div className="figure-image-wrap">
-                    <img
-                      src={fig.imagePath}
-                      alt={fig.name}
-                      className="figure-image"
-                      onClick={() =>
-                        setModal({ 
-                          src: fig.imagePath, 
-                          title: fig.name,
-                          citation: fig.citation,
-                          paperTitle: fig.paperTitle,
-                          paperUrl: fig.paperUrl
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="figure-info">
-                    {/* Citation */}
-                    {fig.citation && (
-                      <div 
-                        className="figure-citation"
-                        dangerouslySetInnerHTML={{
-                          __html: fig.citation.replace(/et al\./g, '<em>et al.</em>')
-                        }}
-                      />
-                    )}
-                    
-                    {/* Paper Title */}
-                    {fig.paperTitle && (
-                      <div className="figure-paper-title">{fig.paperTitle}</div>
-                    )}
-                    
-                    {/* Original figure name and source (fallback if no bibliography) */}
-                    {!fig.citation && (
-                      <>
-                        <div className="figure-title">{fig.name}</div>
-                        <div className="figure-source">{fig.sourceName}</div>
-                      </>
-                    )}
-                    
-                    {/* Codes */}
-                    {showCodes && (
-                      <div className="figure-codes">
-                          {(() => {
-                              // Group codes by father
-                              const grouped = {};
-                              (fig.codes || []).forEach((code) => {
-                              const { father, child } = parseFatherChild(code);
-                              if (!grouped[father]) grouped[father] = [];
-                              if (child) grouped[father].push(child);
-                              });
-
-                              return Object.entries(grouped).map(([father, children]) => (
-                              <div key={father} className="code-block">
-                                  <div className="code-father">{father}</div>
-                                  {children.length > 0 && (
-                                  <div className="code-children">
-                                      {children.map((child) => (
-                                      <span key={child} className="code-child">{child}</span>
-                                      ))}
-                                  </div>
-                                  )}
-                              </div>
-                              ));
-                          })()}
-                      </div>
-                    )}
-
-                    
-                    {/* Link Button */}
-                    {fig.paperUrl && (
-                      <div className="paper-link-container">
-                        <a 
-                          href={fig.paperUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="paper-link-button"
-                        >
-                          Link
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <FigureCard
+                  key={fig.guid}
+                  figure={fig}
+                  showCodes={showCodes}
+                  onImageClick={() => handleImageClick(fig)}
+                />
               ))}
             </div>
           )}
         </main>
       </div>
 
-      {modal && (
-        <div className="modal-backdrop" onClick={() => setModal(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="modal-title">
-                {modal.citation && (
-                  <span 
-                    dangerouslySetInnerHTML={{
-                      __html: modal.citation.replace(/et al\./g, '<em>et al.</em>')
-                    }}
-                  />
-                )}
-                {modal.paperTitle && ` - ${modal.paperTitle}`}
-              </div>
-              <button className="modal-close" onClick={() => setModal(null)}>
-                ✕
-              </button>
-            </div>
-            <div className="modal-body">
-              <img src={modal.src} alt={modal.title} className="modal-image" />
-            </div>
-            {modal.paperUrl && (
-              <div className="modal-footer">
-                <a 
-                  href={modal.paperUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="modal-link-button"
-                >
-                  View Paper
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <Modal modal={modal} onClose={closeModal} />
     </div>
   );
 }
