@@ -39,7 +39,6 @@ body {
   overflow-y: auto;
   padding: 09px;
   border-radius: var(--radius); /* add rounded corners */
-  box-shadow: var(--shadow);    /* optional: give it a card-like shadow */
 }
 
 .main-content {
@@ -117,7 +116,6 @@ body {
   padding: 14px 18px;
   border-radius: var(--radius);
   margin-bottom: 20px;
-  box-shadow: var(--shadow);
   border: 1px solid var(--border);
 }
 
@@ -139,7 +137,6 @@ body {
   background: var(--card-bg);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: var(--shadow);
   border: 1px solid var(--border);
   transition: transform 0.2s, box-shadow 0.2s;
   min-height: 380px; /* altura consistente */
