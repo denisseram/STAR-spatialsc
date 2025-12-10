@@ -16,6 +16,7 @@ import re
 import zipfile
 from argparse import ArgumentParser
 from os.path import join
+import difflib
 
 import pandas as pd
 import pymupdf
@@ -103,41 +104,44 @@ def normalize_string(s):
 
 
 def match_source_to_biblio(source_name, source_attrs, title_lookup):
-    """Try to match a source to bibliography data by title."""
+    """Try to match a source to bibliography data by title, with debug prints."""
     
-    # Get filename from path
-    filename = source_attrs.get('path', '').split('/')[-1]
+    filename = source_attrs.get('name', '')
+    print(filename, "YA BASTA")
     if not filename:
         filename = source_name
     
-    # Remove .pdf extension and normalize
     normalized_filename = normalize_string(filename)
+    normalized_source_name = normalize_string(source_name)
+
+
     
-    # Strategy 1: Try exact match with normalized filename
+    # Strategy 1: exact match with normalized filename
     if normalized_filename in title_lookup:
-        print(f"[green]✓ Matched: {filename}[/green]")
+        print(f"[green]✓ Exact match filename: {filename}[/green]")
         return title_lookup[normalized_filename]
     
-    # Strategy 2: Try exact match with source name
-    normalized_source_name = normalize_string(source_name)
+    # Strategy 2: exact match with normalized source name
     if normalized_source_name in title_lookup:
-        print(f"[green]✓ Matched: {source_name}[/green]")
+        print(f"[green]✓ Exact match source name: {source_name}[/green]")
         return title_lookup[normalized_source_name]
     
-    # Strategy 3: Try fuzzy matching (check if one contains the other)
-    # Only for reasonably long titles to avoid false positives
+    # Strategy 3: fuzzy match (contains)
     if len(normalized_filename) > 15:
         for title, biblio_info in title_lookup.items():
-            # Check if 80% of the shorter string is in the longer one
             shorter = min(normalized_filename, title, key=len)
             longer = max(normalized_filename, title, key=len)
+
+            # print each comparison
+            print(f"[yellow]Comparing:[/yellow] '{shorter}' in '{longer}'?")
             
-            if len(shorter) > 15 and shorter in longer:
+            if shorter in longer:
                 print(f"[yellow]≈ Fuzzy match: {filename} ≈ {biblio_info['title'][:50]}...[/yellow]")
                 return biblio_info
     
     print(f"[red]✗ No match: {filename}[/red]")
     return None
+
 
 
 def extract_data(
@@ -181,8 +185,6 @@ def extract_data(
     assert project_json, "no project"
 
     out_json = join(out_dir, "output.json")
-    #with open(out_json, "w") as f:
-    #    json.dump(project_json, f, indent=4)
 
     # Load bibliography data
     title_lookup = {}

@@ -3,6 +3,8 @@ dist/
 
 # generated types
 .astro/
+public/data/unzipped/
+public/data/unzipped/**
 
 # dependencies
 node_modules/

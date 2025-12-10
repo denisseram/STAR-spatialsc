@@ -1,0 +1,31 @@
+{
+    "attrs": {
+        "firstX": "36",
+        "firstY": "201",
+        "modifyingUser": "D68E2F50-B5DC-4D5B-BC8F-EA9DE7531705",
+        "creatingUser": "D68E2F50-B5DC-4D5B-BC8F-EA9DE7531705",
+        "creationDateTime": "2025-12-10T13:37:18Z",
+        "modifiedDateTime": "2025-12-10T13:37:18Z",
+        "secondY": "434",
+        "secondX": "563",
+        "guid": "DBCE0A40-F6AB-41BF-B626-8E443C4B2882",
+        "name": "527\u2009\u00d7\u2009233",
+        "page": "1"
+    },
+    "Coding": [
+        {
+            "attrs": {
+                "creatingUser": "D68E2F50-B5DC-4D5B-BC8F-EA9DE7531705",
+                "creationDateTime": "2025-12-10T13:37:18Z",
+                "guid": "99BF4A7C-67D5-4007-A91A-043DAA057A75"
+            },
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "BC030B8D-A1A5-4D0A-8B01-21D165E8A2C5"
+                }
+            }
+        }
+    ],
+    "source_guid": "97935A70-4146-4373-8F7E-5D5414BFA433",
+    "subfig_num": null
+}

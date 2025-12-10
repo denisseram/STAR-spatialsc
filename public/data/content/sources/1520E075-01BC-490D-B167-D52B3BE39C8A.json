@@ -1,0 +1,15 @@
+{
+    "modifiedDateTime": "2025-12-10T13:01:05Z",
+    "modifyingUser": "D68E2F50-B5DC-4D5B-BC8F-EA9DE7531705",
+    "creatingUser": "D68E2F50-B5DC-4D5B-BC8F-EA9DE7531705",
+    "creationDateTime": "2025-12-10T13:01:05Z",
+    "path": "internal://1E763A06-7A32-47C0-8D1D-75130DDD271B.pdf",
+    "guid": "1520E075-01BC-490D-B167-D52B3BE39C8A",
+    "name": "Jing Z. et al. - 2024 - Spaco A comprehensive tool for coloring spatial data at single-cell resolution.pdf",
+    "bibliography": {
+        "citation": "2025",
+        "title": "SCNT: an R package for data analysis and visualization of single-cell and spatial transcriptomics",
+        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-105011183286&doi=10.1186%2Fs12859-025-06209-x&partnerID=40&md5=488abb04ac6709ff125733a90cb58822",
+        "year": "2025"
+    }
+}

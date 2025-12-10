@@ -1,0 +1,15 @@
+{
+    "modifiedDateTime": "2025-12-10T13:01:05Z",
+    "modifyingUser": "D68E2F50-B5DC-4D5B-BC8F-EA9DE7531705",
+    "creatingUser": "D68E2F50-B5DC-4D5B-BC8F-EA9DE7531705",
+    "creationDateTime": "2025-12-10T13:01:05Z",
+    "path": "internal://9CEFB3A8-7C33-49C2-82A8-6CBA9362C723.pdf",
+    "guid": "710C2E98-B9FE-4CD6-A94F-C5C7A6B0C0CC",
+    "name": "Jiang X. et al. - 2022 - A Bayesian modified Ising model for identifying spatially variable genes from spatial transcriptomic.pdf",
+    "bibliography": {
+        "citation": "2025",
+        "title": "OrgaCCC: Orthogonal graph autoencoders for constructing cell-cell communication networks on spatial transcriptomics data",
+        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-105009043722&doi=10.1371%2Fjournal.pcbi.1013212&partnerID=40&md5=59a2fad54fcfda8b14c6f57090e508c6",
+        "year": "2025"
+    }
+}
