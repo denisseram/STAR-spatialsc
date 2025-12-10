@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useCallback } from "react";
 import "../styles/FigureGrid.css";
 
-// Constants
 const FILTER_MODES = {
   AND: "AND",
   OR: "OR"
@@ -14,7 +13,6 @@ const CODE_LEVELS = {
   QUADRUPLE: 4
 };
 
-// Helper functions
 const parseCode = (code) => {
   const parts = code.split(".");
   
@@ -293,10 +291,48 @@ export default function FigureGrid({ figures = [] }) {
 
   // Event handlers
   const toggleCode = useCallback((code) => {
-    setSelectedCodes((prev) =>
-      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
-    );
-  }, []);
+    setSelectedCodes((prev) => {
+      // Check if this is a child code that has grandchildren
+      const parts = code.split(".");
+      if (parts.length === CODE_LEVELS.TRIPLE) {
+        const [titulo, padre, hijo] = parts;
+        const hasGrandchildren = groupedCodes[titulo]?.[padre]?.[hijo] instanceof Set === false;
+        
+        if (hasGrandchildren) {
+          const grandchildren = Object.keys(groupedCodes[titulo][padre][hijo] || {});
+          const grandchildCodes = grandchildren.map(gc => `${code}.${gc}`);
+          
+          // Check if parent is currently selected
+          const isParentSelected = prev.includes(code);
+          
+          if (isParentSelected) {
+            // Deselect parent and all grandchildren
+            return prev.filter(c => c !== code && !grandchildCodes.includes(c));
+          } else {
+            // Select parent and all grandchildren
+            return [...prev, code, ...grandchildCodes.filter(gc => !prev.includes(gc))];
+          }
+        }
+      }
+      
+      // Check if this is a grandchild and its parent is selected
+      if (parts.length === CODE_LEVELS.QUADRUPLE) {
+        const parentCode = parts.slice(0, 3).join(".");
+        const isGrandchildSelected = prev.includes(code);
+        
+        if (isGrandchildSelected) {
+          // Deselecting a grandchild also deselects the parent
+          return prev.filter(c => c !== code && c !== parentCode);
+        } else {
+          // Selecting a grandchild adds it but keeps parent deselected
+          return [...prev, code];
+        }
+      }
+      
+      // Default toggle behavior for other codes
+      return prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code];
+    });
+  }, [groupedCodes]);
 
   const selectAll = useCallback(() => {
     const allCodes = [
@@ -385,26 +421,36 @@ export default function FigureGrid({ figures = [] }) {
                   )}
 
                   {!(hijos instanceof Set) &&
-                    Object.entries(hijos).map(([hijo, grandchildren]) => (
-                      <div key={`${titulo}.${padre}.${hijo}`} className="code-hijo-group">
-                        <div className="code-hijo-title">{hijo}</div>
-                        <div className="code-grandchildren-buttons">
-                          {Array.from(grandchildren).map((grandchild) => {
-                            const fullCode = `${titulo}.${padre}.${hijo}.${grandchild}`;
-                            return (
-                              <CodeButton
-                                key={fullCode}
-                                code={grandchild}
-                                isActive={selectedCodes.includes(fullCode)}
-                                isDisabled={!availableCodes.has(fullCode)}
-                                onClick={() => toggleCode(fullCode)}
-                                isSmall
-                              />
-                            );
-                          })}
+                    Object.entries(hijos).map(([hijo, grandchildren]) => {
+                      const parentCode = `${titulo}.${padre}.${hijo}`;
+                      const isParentSelected = selectedCodes.includes(parentCode);
+                      
+                      return (
+                        <div key={parentCode} className="code-hijo-group">
+                          <CodeButton
+                            code={hijo}
+                            isActive={isParentSelected}
+                            isDisabled={!availableCodes.has(parentCode)}
+                            onClick={() => toggleCode(parentCode)}
+                          />
+                          <div className="code-grandchildren-buttons">
+                            {Array.from(grandchildren).map((grandchild) => {
+                              const fullCode = `${parentCode}.${grandchild}`;
+                              return (
+                                <CodeButton
+                                  key={fullCode}
+                                  code={grandchild}
+                                  isActive={selectedCodes.includes(fullCode)}
+                                  isDisabled={!availableCodes.has(fullCode)}
+                                  onClick={() => toggleCode(fullCode)}
+                                  isSmall
+                                />
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                 </div>
               ))}
             </div>
