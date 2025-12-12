@@ -1,5 +1,6 @@
 {
-    "guid": "DE3B171E-0006-4EBA-B1A6-CE2BDF100A50",
+    "color": "#008C96",
+    "isCodable": "true",
     "name": "Data.Visualized Elements.Feature",
-    "isCodable": "true"
+    "guid": "DE3B171E-0006-4EBA-B1A6-CE2BDF100A50"
 }

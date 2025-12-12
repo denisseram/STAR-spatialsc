@@ -1,5 +1,6 @@
 {
-    "guid": "E9E939C3-A93F-4CB8-8180-0A324CA47D45",
+    "color": "#EF5350",
+    "isCodable": "true",
     "name": "Data.Modality.Simulated",
-    "isCodable": "true"
+    "guid": "E9E939C3-A93F-4CB8-8180-0A324CA47D45"
 }

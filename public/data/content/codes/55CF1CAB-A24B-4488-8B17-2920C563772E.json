@@ -1,5 +1,6 @@
 {
-    "guid": "55CF1CAB-A24B-4488-8B17-2920C563772E",
+    "color": "#008C96",
+    "isCodable": "true",
     "name": "Data.Visualized Elements.Observation",
-    "isCodable": "true"
+    "guid": "55CF1CAB-A24B-4488-8B17-2920C563772E"
 }

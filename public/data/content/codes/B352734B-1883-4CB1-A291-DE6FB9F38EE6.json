@@ -1,5 +1,6 @@
 {
-    "guid": "B352734B-1883-4CB1-A291-DE6FB9F38EE6",
+    "color": "#008C96",
+    "isCodable": "true",
     "name": "Data.Visualized Elements.Relationship",
-    "isCodable": "true"
+    "guid": "B352734B-1883-4CB1-A291-DE6FB9F38EE6"
 }

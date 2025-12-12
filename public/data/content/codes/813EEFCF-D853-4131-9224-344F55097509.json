@@ -1,5 +1,6 @@
 {
-    "guid": "813EEFCF-D853-4131-9224-344F55097509",
+    "color": "#008C96",
+    "isCodable": "true",
     "name": "Data.Visualized Elements.Statistic",
-    "isCodable": "true"
+    "guid": "813EEFCF-D853-4131-9224-344F55097509"
 }
