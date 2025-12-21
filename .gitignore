@@ -3,11 +3,16 @@ dist/
 
 # generated types
 .astro/
+public/data/
 public/data/unzipped/
 public/data/unzipped/**
 
 # dependencies
 node_modules/
+
+*.qpdx
+*.json
+*.mqda
 
 # logs
 npm-debug.log*

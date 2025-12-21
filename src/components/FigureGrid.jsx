@@ -53,7 +53,10 @@ const groupCodesByHierarchy = (codes) => {
     if (length === CODE_LEVELS.QUADRUPLE) {
       const [titulo, padre, hijo, grandchild] = parts;
       if (!grouped[titulo]) grouped[titulo] = {};
-      if (!grouped[titulo][padre]) grouped[titulo][padre] = {};
+      if (!grouped[titulo][padre]) {
+        // Initialize as object to hold children which may be either Sets or objects
+        grouped[titulo][padre] = {};
+      }
       if (!grouped[titulo][padre][hijo]) grouped[titulo][padre][hijo] = new Set();
       grouped[titulo][padre][hijo].add(grandchild);
       return;
@@ -62,8 +65,18 @@ const groupCodesByHierarchy = (codes) => {
     if (length === CODE_LEVELS.TRIPLE) {
       const [titulo, padre, hijo] = parts;
       if (!grouped[titulo]) grouped[titulo] = {};
-      if (!grouped[titulo][padre]) grouped[titulo][padre] = new Set();
-      grouped[titulo][padre].add(hijo);
+      if (!grouped[titulo][padre]) {
+        grouped[titulo][padre] = new Set();
+      }
+      // If padre is already an object (from QUADRUPLE codes), convert or skip
+      if (grouped[titulo][padre] instanceof Set) {
+        grouped[titulo][padre].add(hijo);
+      } else {
+        // Already has grandchildren, so this hijo should be an object too
+        if (!grouped[titulo][padre][hijo]) {
+          grouped[titulo][padre][hijo] = new Set();
+        }
+      }
       return;
     }
 
@@ -149,6 +162,22 @@ const FigureCard = ({ figure, showCodes, onImageClick }) => {
     return grouped;
   }, [figure.codes]);
 
+  // Extract author from sourceName if citation is not available or is just a year
+  const displayCitation = useMemo(() => {
+    if (figure.citation && figure.citation.length > 4 && !figure.citation.match(/^\d{4}$/)) {
+      return figure.citation;
+    }
+    // Extract author from sourceName (format: "Author - Year - Title.pdf")
+    if (figure.sourceName) {
+      const match = figure.sourceName.match(/^(.+?)\s*-\s*\d{4}/);
+      if (match) {
+        const author = match[1].trim();
+        return figure.year ? `${author} - ${figure.year}` : author;
+      }
+    }
+    return figure.citation || null;
+  }, [figure.citation, figure.sourceName, figure.year]);
+
   return (
     <div className="figure-card">
       <div className="figure-image-wrap">
@@ -161,11 +190,11 @@ const FigureCard = ({ figure, showCodes, onImageClick }) => {
       </div>
       
       <div className="figure-info">
-        {figure.citation && (
+        {displayCitation && (
           <div 
             className="figure-citation"
             dangerouslySetInnerHTML={{
-              __html: figure.citation.replace(/et al\./g, '<em>et al.</em>')
+              __html: displayCitation.replace(/et al\./g, '<em>et al.</em>')
             }}
           />
         )}
@@ -174,7 +203,7 @@ const FigureCard = ({ figure, showCodes, onImageClick }) => {
           <div className="figure-paper-title">{figure.paperTitle}</div>
         )}
         
-        {!figure.citation && (
+        {!displayCitation && (
           <>
             <div className="figure-title">{figure.name}</div>
             <div className="figure-source">{figure.sourceName}</div>
