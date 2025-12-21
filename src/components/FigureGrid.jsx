@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import "../styles/FigureGrid.css";
 
 const FILTER_MODES = {
@@ -285,6 +285,255 @@ const Modal = ({ modal, onClose }) => {
   );
 };
 
+// Word Cloud Component
+const WordCloud = ({ figures, filteredFigures }) => {
+  const canvasRef = useRef(null);
+  const [hoveredWord, setHoveredWord] = useState(null);
+  const [wordPositions, setWordPositions] = useState([]);
+
+  // Stop words to filter out
+  const stopWords = new Set([
+    'what', 'why', 'how', 'when', 'where', 'who', 'which', 'is', 'are', 'was', 'were',
+    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
+    'by', 'from', 'as', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did',
+    'will', 'would', 'should', 'could', 'may', 'might', 'can', 'this', 'that', 'these',
+    'those', 'it', 'its', 'they', 'them', 'their', 'there', 'here', 'then', 'than',
+    'so', 'if', 'about', 'into', 'through', 'over', 'under', 'again', 'further', 'other'
+  ]);
+
+  // Calculate word frequencies from research questions in filtered figures
+  const wordData = useMemo(() => {
+    const frequency = {};
+    
+    // Validate that filteredFigures exists and is an array
+    if (!filteredFigures || !Array.isArray(filteredFigures)) {
+      return [];
+    }
+    
+    // Get all single-level codes (no dots) from the filtered figures
+    const singleLevelCodes = new Set();
+    filteredFigures.forEach(figure => {
+      (figure.codes || []).forEach(code => {
+        if (!code.includes('.')) {
+          singleLevelCodes.add(code);
+        }
+      });
+    });
+    
+    // Analyze words in these research questions
+    singleLevelCodes.forEach(code => {
+      // Split by spaces and punctuation, convert to lowercase
+      const words = code.toLowerCase()
+        .replace(/[?.,;:!()[\]{}]/g, ' ')
+        .split(/\s+/)
+        .filter(word => word.length > 2 && !stopWords.has(word));
+      
+      words.forEach(word => {
+        frequency[word] = (frequency[word] || 0) + 1;
+      });
+    });
+    
+    // Convert to array and sort by frequency
+    const words = Object.entries(frequency)
+      .map(([word, count]) => ({
+        text: word,
+        count: count
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 30); // Take top 30 words
+    
+    return words;
+  }, [filteredFigures]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+
+    // Calculate font sizes
+    const maxCount = Math.max(...wordData.map(w => w.count));
+    const minCount = Math.min(...wordData.map(w => w.count));
+    const fontSizeRange = { min: 14, max: 42 };
+
+    const positions = [];
+    const padding = 2;
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    wordData.forEach((word) => {
+      const fontSize = minCount === maxCount 
+        ? fontSizeRange.max 
+        : fontSizeRange.min + ((word.count - minCount) / (maxCount - minCount)) * (fontSizeRange.max - fontSizeRange.min);
+      
+      ctx.font = `bold ${fontSize}px Arial`;
+      const metrics = ctx.measureText(word.text);
+      const wordWidth = metrics.width;
+      const wordHeight = fontSize;
+
+      // Try to place word starting from center in spiral pattern
+      let placed = false;
+      let radius = 0;
+      let angle = 0;
+      const radiusIncrement = 3;
+      const angleIncrement = 0.3;
+      let attempts = 0;
+      let x, y;
+
+      while (!placed && attempts < 500) {
+        // Spiral placement from center
+        x = centerX + radius * Math.cos(angle) - wordWidth / 2;
+        y = centerY + radius * Math.sin(angle) + wordHeight / 4;
+
+        // Keep within bounds
+        x = Math.max(padding, Math.min(width - wordWidth - padding, x));
+        y = Math.max(wordHeight + padding, Math.min(height - padding, y));
+
+        // Check collision with existing words
+        const collision = positions.some(pos => {
+          return !(x + wordWidth < pos.x - padding ||
+                   x > pos.x + pos.width + padding ||
+                   y - wordHeight < pos.y + padding ||
+                   y > pos.y - pos.height - padding);
+        });
+
+        if (!collision) {
+          placed = true;
+        } else {
+          angle += angleIncrement;
+          if (angle > Math.PI * 2) {
+            angle = 0;
+            radius += radiusIncrement;
+          }
+        }
+        attempts++;
+      }
+
+      if (placed) {
+        positions.push({
+          ...word,
+          x,
+          y,
+          width: wordWidth,
+          height: wordHeight,
+          fontSize
+        });
+      }
+    });
+
+    setWordPositions(positions);
+
+    // Draw words with varying colors
+    positions.forEach((word, idx) => {
+      ctx.font = `bold ${word.fontSize}px Arial`;
+      
+      // Generate color based on frequency
+      const hue = (idx * 137.5) % 360; // Golden angle for color distribution
+      const saturation = 65 + (word.count / maxCount) * 15;
+      const lightness = 35 + (word.count / maxCount) * 15;
+      
+      ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+      ctx.fillText(word.text, word.x, word.y);
+    });
+
+  }, [wordData]);
+
+  if (wordData.length === 0) {
+    return (
+      <div className="word-cloud-container" style={{ marginBottom: '24px' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#555' }}>
+          Research Questions Keywords
+        </h3>
+        <div style={{
+          border: '1px solid #ddd',
+          borderRadius: '4px',
+          backgroundColor: '#fafafa',
+          padding: '20px',
+          textAlign: 'center',
+          color: '#999',
+          fontSize: '13px',
+          height: '250px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          No research questions in current selection
+        </div>
+      </div>
+    );
+  }
+
+  const handleCanvasClick = (e) => {
+    // Word cloud is now informational only, not interactive
+    return;
+  };
+
+  const handleCanvasMouseMove = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const hoveredWord = wordPositions.find(word => {
+      return x >= word.x && x <= word.x + word.width &&
+             y >= word.y - word.height && y <= word.y;
+    });
+
+    if (hoveredWord) {
+      canvas.style.cursor = 'default';
+      setHoveredWord(`${hoveredWord.text} (${hoveredWord.count})`);
+    } else {
+      canvas.style.cursor = 'default';
+      setHoveredWord(null);
+    }
+  };
+
+  return (
+    <div className="word-cloud-container" style={{ marginBottom: '24px' }}>
+      <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#555' }}>
+        Research Questions Keywords
+      </h3>
+      <div style={{ position: 'relative' }}>
+        <canvas
+          ref={canvasRef}
+          width={280}
+          height={250}
+          onClick={handleCanvasClick}
+          onMouseMove={handleCanvasMouseMove}
+          style={{ 
+            border: '1px solid #ddd', 
+            borderRadius: '4px',
+            backgroundColor: '#fafafa',
+            display: 'block'
+          }}
+        />
+        {hoveredWord && (
+          <div style={{
+            position: 'absolute',
+            bottom: '-30px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            color: '#fff',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            whiteSpace: 'nowrap',
+            pointerEvents: 'none'
+          }}>
+            {hoveredWord}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Main component
 export default function FigureGrid({ figures = [] }) {
   const [selectedCodes, setSelectedCodes] = useState([]);
@@ -423,6 +672,13 @@ export default function FigureGrid({ figures = [] }) {
               </button>
             </div>
           </div>
+
+          {singleLevelCodes.length > 0 && (
+            <WordCloud
+              figures={figures}
+              filteredFigures={filteredFigures}
+            />
+          )}
 
           {Object.entries(groupedCodes).map(([titulo, padres]) => (
             <div key={titulo} className="code-group">

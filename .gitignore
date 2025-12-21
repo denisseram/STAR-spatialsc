@@ -13,6 +13,8 @@ node_modules/
 *.qpdx
 *.json
 *.mqda
+*.zip
+
 
 # logs
 npm-debug.log*
