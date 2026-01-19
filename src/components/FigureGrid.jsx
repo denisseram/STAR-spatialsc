@@ -298,7 +298,7 @@ const WordCloud = ({ figures, filteredFigures }) => {
     'by', 'from', 'as', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did',
     'will', 'would', 'should', 'could', 'may', 'might', 'can', 'this', 'that', 'these',
     'those', 'it', 'its', 'they', 'them', 'their', 'there', 'here', 'then', 'than',
-    'so', 'if', 'about', 'into', 'through', 'over', 'under', 'again', 'further', 'other'
+    'so', 'if', 'about', 'into', 'through', 'over', 'under', 'again', 'further', 'other', "spatial"
   ]);
 
   // Calculate word frequencies from research questions in filtered figures
@@ -359,12 +359,10 @@ const WordCloud = ({ figures, filteredFigures }) => {
     // Calculate font sizes
     const maxCount = Math.max(...wordData.map(w => w.count));
     const minCount = Math.min(...wordData.map(w => w.count));
-    const fontSizeRange = { min: 14, max: 42 };
+    const fontSizeRange = { min: 16, max: 48 };
 
     const positions = [];
-    const padding = 2;
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const padding = 5;
 
     wordData.forEach((word) => {
       const fontSize = minCount === maxCount 
@@ -376,40 +374,25 @@ const WordCloud = ({ figures, filteredFigures }) => {
       const wordWidth = metrics.width;
       const wordHeight = fontSize;
 
-      // Try to place word starting from center in spiral pattern
+      // Try to place word (simple random placement)
       let placed = false;
-      let radius = 0;
-      let angle = 0;
-      const radiusIncrement = 3;
-      const angleIncrement = 0.3;
       let attempts = 0;
       let x, y;
 
-      while (!placed && attempts < 500) {
-        // Spiral placement from center
-        x = centerX + radius * Math.cos(angle) - wordWidth / 2;
-        y = centerY + radius * Math.sin(angle) + wordHeight / 4;
-
-        // Keep within bounds
-        x = Math.max(padding, Math.min(width - wordWidth - padding, x));
-        y = Math.max(wordHeight + padding, Math.min(height - padding, y));
+      while (!placed && attempts < 100) {
+        x = Math.random() * (width - wordWidth - padding * 2) + padding;
+        y = Math.random() * (height - wordHeight - padding * 2) + padding + wordHeight;
 
         // Check collision with existing words
         const collision = positions.some(pos => {
           return !(x + wordWidth < pos.x - padding ||
                    x > pos.x + pos.width + padding ||
-                   y - wordHeight < pos.y + padding ||
-                   y > pos.y - pos.height - padding);
+                   y - wordHeight > pos.y + padding ||
+                   y < pos.y - pos.height - padding);
         });
 
         if (!collision) {
           placed = true;
-        } else {
-          angle += angleIncrement;
-          if (angle > Math.PI * 2) {
-            angle = 0;
-            radius += radiusIncrement;
-          }
         }
         attempts++;
       }
@@ -434,8 +417,8 @@ const WordCloud = ({ figures, filteredFigures }) => {
       
       // Generate color based on frequency
       const hue = (idx * 137.5) % 360; // Golden angle for color distribution
-      const saturation = 65 + (word.count / maxCount) * 15;
-      const lightness = 35 + (word.count / maxCount) * 15;
+      const saturation = 60 + (word.count / maxCount) * 20;
+      const lightness = 40 + (word.count / maxCount) * 10;
       
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
       ctx.fillText(word.text, word.x, word.y);
