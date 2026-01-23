@@ -14,24 +14,57 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout your repository
-        uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Python
+      # Setup Node (para el frontend)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Setup Python (para correr output.py)
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.11"
 
-      - name: Install Python dependencies (if needed)
-        run: pip install -r requirements.txt || true
+      # Install Node dependencies
+      - name: Install dependencies (Node)
+        run: npm ci
 
-      - name: Generate data files
+      # (Opcional) instalar dependencias Python si las necesitas
+      - name: Install Python dependencies
         run: |
-          mkdir -p public/data
-          python output.py --input STAR-spatial-v2.qdpx --output public/data --bibliography STAR-spatial.json
+          pip install -r requirements.txt || true
 
-      - name: Install, build, and upload your site
-        uses: withastro/action@v5
+      # Download STAR-spatial-taxo.qdpx from Dropbox
+      - name: Download QDPX
+        run: |
+          wget -O STAR-spatial-taxo.qdpx "https://drive.jku.at/filr/public-link/file-download/0cce88f19b463f3e019bea2a32f430f4/78054/-6421783627028050536/STAR-spatial_taxo.qdpx"
+
+      # Download STAR-spatial.json from Dropbox
+      - name: Download bibliography JSON
+        run: |
+          wget -O STAR-spatial.json "https://drive.jku.at/filr/public-link/file-download/0cce88f19b463f3e019bea2d1a8730ff/78055/777477371731235378/STAR-spatial_taxo.json"
+
+      # Run your Python processing script
+      - name: Process QDPX → JSON
+        run: |
+          python output.py \
+            --input STAR-spatial-taxo.qdpx \
+            --output public/data \
+            --bibliography STAR-spatial-taxo.json
+
+      # Build the frontend AFTER data exists
+      - name: Build
+        run: npm run build
+
+      # Upload dist folder to GitHub Pages
+      - name: Upload build output
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
 
   deploy:
     needs: build
