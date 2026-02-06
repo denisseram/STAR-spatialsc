@@ -13,6 +13,7 @@ const CODE_LEVELS = {
   QUADRUPLE: 4
 };
 
+
 const parseCode = (code) => {
   const parts = code.split(".");
   
@@ -41,7 +42,12 @@ const groupCodesByHierarchy = (codes) => {
   const misc = [];
   const single = [];
 
-  codes.forEach((code) => {
+  // Sort codes by level (deepest first) to avoid structure conflicts
+  const sortedCodes = [...codes].sort((a, b) => {
+    return b.split(".").length - a.split(".").length;
+  });
+
+  sortedCodes.forEach((code) => {
     const parts = code.split(".");
     const length = parts.length;
 
@@ -54,7 +60,10 @@ const groupCodesByHierarchy = (codes) => {
       const [titulo, padre, hijo, grandchild] = parts;
       if (!grouped[titulo]) grouped[titulo] = {};
       if (!grouped[titulo][padre]) {
-        // Initialize as object to hold children which may be either Sets or objects
+        grouped[titulo][padre] = {};
+      }
+      // Convert Set to object if needed
+      if (grouped[titulo][padre] instanceof Set) {
         grouped[titulo][padre] = {};
       }
       if (!grouped[titulo][padre][hijo]) grouped[titulo][padre][hijo] = new Set();
@@ -68,11 +77,12 @@ const groupCodesByHierarchy = (codes) => {
       if (!grouped[titulo][padre]) {
         grouped[titulo][padre] = new Set();
       }
-      // If padre is already an object (from QUADRUPLE codes), convert or skip
+      
       if (grouped[titulo][padre] instanceof Set) {
         grouped[titulo][padre].add(hijo);
       } else {
-        // Already has grandchildren, so this hijo should be an object too
+        // padre is an object (has grandchildren)
+        // Add hijo as a key with empty Set if it doesn't exist
         if (!grouped[titulo][padre][hijo]) {
           grouped[titulo][padre][hijo] = new Set();
         }
@@ -141,9 +151,9 @@ const calculateAvailableCodes = (figures, uniqueCodes, selectedCodes, filterMode
 };
 
 // Sub-components
-const CodeButton = ({ code, isActive, isDisabled, onClick, isSmall = false }) => (
+const CodeButton = ({ code, isActive, isDisabled, onClick, isSmall = false, isGrandchild = false }) => (
   <button
-    className={`code-button ${isSmall ? "small" : ""} ${isActive ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
+    className={`code-button ${isSmall ? "small" : ""} ${isGrandchild ? "grandchild" : ""} ${isActive ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
     onClick={onClick}
     disabled={isDisabled}
   >
@@ -298,7 +308,7 @@ const WordCloud = ({ figures, filteredFigures }) => {
     'by', 'from', 'as', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did',
     'will', 'would', 'should', 'could', 'may', 'might', 'can', 'this', 'that', 'these',
     'those', 'it', 'its', 'they', 'them', 'their', 'there', 'here', 'then', 'than',
-    'so', 'if', 'about', 'into', 'through', 'over', 'under', 'again', 'further', 'other', "spatial"
+    'so', 'if', 'about', 'into', 'through', 'over', 'under', 'again', 'further', 'other', "spatial", "with"
   ]);
 
   // Calculate word frequencies from research questions in filtered figures
@@ -552,48 +562,62 @@ export default function FigureGrid({ figures = [] }) {
 
   // Event handlers
   const toggleCode = useCallback((code) => {
-    setSelectedCodes((prev) => {
-      // Check if this is a child code that has grandchildren
-      const parts = code.split(".");
-      if (parts.length === CODE_LEVELS.TRIPLE) {
-        const [titulo, padre, hijo] = parts;
-        const hasGrandchildren = groupedCodes[titulo]?.[padre]?.[hijo] instanceof Set === false;
-        
-        if (hasGrandchildren) {
-          const grandchildren = Object.keys(groupedCodes[titulo][padre][hijo] || {});
-          const grandchildCodes = grandchildren.map(gc => `${code}.${gc}`);
-          
-          // Check if parent is currently selected
-          const isParentSelected = prev.includes(code);
-          
-          if (isParentSelected) {
-            // Deselect parent and all grandchildren
-            return prev.filter(c => c !== code && !grandchildCodes.includes(c));
-          } else {
-            // Select parent and all grandchildren
-            return [...prev, code, ...grandchildCodes.filter(gc => !prev.includes(gc))];
-          }
-        }
-      }
+  setSelectedCodes((prev) => {
+    const parts = code.split(".");
+    
+    // Check if this is a child code that has grandchildren
+    if (parts.length === CODE_LEVELS.TRIPLE) {
+      const [titulo, padre, hijo] = parts;
+      const hasGrandchildren = groupedCodes[titulo]?.[padre]?.[hijo] instanceof Set && 
+                               groupedCodes[titulo][padre][hijo].size > 0;
       
-      // Check if this is a grandchild and its parent is selected
-      if (parts.length === CODE_LEVELS.QUADRUPLE) {
-        const parentCode = parts.slice(0, 3).join(".");
-        const isGrandchildSelected = prev.includes(code);
+      if (hasGrandchildren) {
+        const grandchildCodes = Array.from(groupedCodes[titulo][padre][hijo]).map(gc => `${code}.${gc}`);
         
-        if (isGrandchildSelected) {
-          // Deselecting a grandchild also deselects the parent
-          return prev.filter(c => c !== code && c !== parentCode);
+        // Check if parent is currently selected
+        const isParentSelected = prev.includes(code);
+        
+        if (isParentSelected) {
+          // Deselect parent and all grandchildren
+          return prev.filter(c => c !== code && !grandchildCodes.includes(c));
         } else {
-          // Selecting a grandchild adds it but keeps parent deselected
-          return [...prev, code];
+          // Select parent and all grandchildren
+          return [...prev, code, ...grandchildCodes.filter(gc => !prev.includes(gc))];
         }
       }
+    }
+    
+    // Check if this is a grandchild and its parent is selected
+    if (parts.length === CODE_LEVELS.QUADRUPLE) {
+      const parentCode = parts.slice(0, 3).join(".");
+      const isGrandchildSelected = prev.includes(code);
       
-      // Default toggle behavior for other codes
-      return prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code];
-    });
-  }, [groupedCodes]);
+      if (isGrandchildSelected) {
+        // Deselecting a grandchild also deselects the parent
+        return prev.filter(c => c !== code && c !== parentCode);
+      } else {
+        // Selecting a grandchild - check if all siblings would be selected
+        const [titulo, padre, hijo] = parentCode.split(".");
+        const allGrandchildren = Array.from(groupedCodes[titulo][padre][hijo] || new Set());
+        const grandchildCodes = allGrandchildren.map(gc => `${parentCode}.${gc}`);
+        
+        // Add this grandchild
+        const newSelection = [...prev, code];
+        
+        // If all grandchildren are now selected, also select the parent
+        const allSelected = grandchildCodes.every(gc => newSelection.includes(gc));
+        if (allSelected && !newSelection.includes(parentCode)) {
+          return [...newSelection, parentCode];
+        }
+        
+        return newSelection;
+      }
+    }
+    
+    // Default toggle behavior for other codes
+    return prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code];
+  });
+}, [groupedCodes]);
 
   const selectAll = useCallback(() => {
     const allCodes = [
@@ -712,6 +736,7 @@ export default function FigureGrid({ figures = [] }) {
                                   isDisabled={!availableCodes.has(fullCode)}
                                   onClick={() => toggleCode(fullCode)}
                                   isSmall
+                                  isGrandchild={true}
                                 />
                               );
                             })}
@@ -783,5 +808,9 @@ export default function FigureGrid({ figures = [] }) {
 
       <Modal modal={modal} onClose={closeModal} />
     </div>
+  );
+}
+
+
   );
 }
