@@ -811,6 +811,3 @@ export default function FigureGrid({ figures = [] }) {
   );
 }
 
-
-  );
-}
