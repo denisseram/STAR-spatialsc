@@ -1,7 +1,11 @@
+
 beautifulsoup4
-lxml
 bs2json
-pymupdf
-pandas
+lxml
 numpy
+pandas
+pymupdf
 rich
+=======
+rich
+>>>>>>> 87ec129cd271080f10c2b5fd3fe04bab6196d23a

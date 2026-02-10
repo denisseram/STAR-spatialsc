@@ -7,9 +7,9 @@
     "guid": "458230A3-0A72-496E-8DE5-27138B3CF381",
     "name": "Thuilliez C. et al. - 2024 - CellsFromSpace a fast, accurate, and reference-free tool to deconvolve and annotate spatially distr.pdf",
     "bibliography": {
-        "citation": "2026",
-        "title": "Integrating modularity maximization and contrastive learning for identifying spatial domain from spatial transcriptomics",
-        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-105013842579&doi=10.1016%2Fj.eswa.2025.129426&partnerID=40&md5=dbba85eceea59e4a0f9a949bc44c3cd4",
-        "year": "2026"
+        "citation": "Pang et al., 2025",
+        "title": "STForte: tissue context-specific encoding and consistency-aware spatial imputation for spatially resolved transcriptomics",
+        "url": "https://api.semanticscholar.org/CorpusId:277953095",
+        "year": "2025"
     }
 }

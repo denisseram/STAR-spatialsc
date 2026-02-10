@@ -10,6 +10,7 @@ public/data/unzipped/**
 # dependencies
 node_modules/
 
+*.qpdx
 *.qdpx
 *.json
 *.mqda

@@ -7,9 +7,9 @@
     "guid": "8F9D9F37-D77B-4BAC-A3F9-03139F524E28",
     "name": "Pratama R. et al. - 2025 - Gene spatial integration Enhancing spatial transcriptomics analysis via deep learning and batch eff.pdf",
     "bibliography": {
-        "citation": "2026",
-        "title": "Integrating modularity maximization and contrastive learning for identifying spatial domain from spatial transcriptomics",
-        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-105013842579&doi=10.1016%2Fj.eswa.2025.129426&partnerID=40&md5=dbba85eceea59e4a0f9a949bc44c3cd4",
-        "year": "2026"
+        "citation": "Pang et al., 2025",
+        "title": "STForte: tissue context-specific encoding and consistency-aware spatial imputation for spatially resolved transcriptomics",
+        "url": "https://api.semanticscholar.org/CorpusId:277953095",
+        "year": "2025"
     }
 }
