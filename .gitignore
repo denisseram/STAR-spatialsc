@@ -34,3 +34,4 @@ STAR-spatial-v2.qdpx
 # jetbrains setting folder
 .idea/
 public/data**
+*.qdpx
