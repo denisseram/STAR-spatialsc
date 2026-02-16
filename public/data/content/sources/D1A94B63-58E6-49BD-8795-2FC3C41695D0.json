@@ -7,9 +7,9 @@
     "guid": "D1A94B63-58E6-49BD-8795-2FC3C41695D0",
     "name": "Wang B. et al. - 2023 - Spatial-MGCN a novel multi-view graph convolutional network for identifying spatial domains with at.pdf",
     "bibliography": {
-        "citation": "2024",
-        "title": "Deciphering spatial domains from spatially resolved transcriptomics through spatially regularized deep graph networks",
-        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-85211136821&doi=10.1186%2Fs12864-024-11072-w&partnerID=40&md5=ea5074c14561b7315738c7f18ad4d5b0",
-        "year": "2024"
+        "citation": "2023",
+        "title": "Spatial-MGCN: a novel multi-view graph convolutional network for identifying spatial domains with attention mechanism",
+        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-85172424471&doi=10.1093%2Fbib%2Fbbad262&partnerID=40&md5=7b8ec0550ebbcb3bd2dd62ce974459b8",
+        "year": "2023"
     }
 }

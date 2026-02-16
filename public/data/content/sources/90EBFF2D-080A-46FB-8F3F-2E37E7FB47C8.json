@@ -7,9 +7,9 @@
     "guid": "90EBFF2D-080A-46FB-8F3F-2E37E7FB47C8",
     "name": "Jiang et al. - 2023 - SINFONIA Scalable Identification of Spatially Variable Genes for Deciphering Spatial Domains.pdf",
     "bibliography": {
-        "citation": "2025",
-        "title": "SPACE: Spatially variable gene clustering adjusting for cell type effect for improved spatial domain detection",
-        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-105016774401&doi=10.1093%2Fnar%2Fgkaf936&partnerID=40&md5=06ca4c675cdf6198811d3d486b466d1b",
-        "year": "2025"
+        "citation": "Jiang et al., 2023",
+        "title": "SINFONIA: Scalable Identification of Spatially Variable Genes for Deciphering Spatial Domains",
+        "url": "https://api.semanticscholar.org/CorpusId:256863937",
+        "year": "2023"
     }
 }

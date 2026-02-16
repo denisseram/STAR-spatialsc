@@ -7,9 +7,9 @@
     "guid": "F3D242FC-4459-4824-8D1E-C1F0BCE9D9FE",
     "name": "Pardo B. et al. - 2022 - spatialLIBD an RBioconductor package to visualize spatially-resolved transcriptomics data.pdf",
     "bibliography": {
-        "citation": "2023",
-        "title": "CLARIFY: cell\u2013cell interaction and gene regulatory network refinement from spatially resolved transcriptomics",
-        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-85164229898&doi=10.1093%2Fbioinformatics%2Fbtad269&partnerID=40&md5=b6255b462aca8806efc02a5b39bdf090",
-        "year": "2023"
+        "citation": "2022",
+        "title": "spatialLIBD: an R/Bioconductor package to visualize spatially-resolved transcriptomics data",
+        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-85131904011&doi=10.1186%2Fs12864-022-08601-w&partnerID=40&md5=248be80d0a988035cfea8da09fac7a74",
+        "year": "2022"
     }
 }

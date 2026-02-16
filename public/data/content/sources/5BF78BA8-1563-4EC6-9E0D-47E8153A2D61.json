@@ -7,9 +7,9 @@
     "guid": "5BF78BA8-1563-4EC6-9E0D-47E8153A2D61",
     "name": "Palla et al. - 2022 - Squidpy a scalable framework for spatial omics analysis.pdf",
     "bibliography": {
-        "citation": "Mah et al., 2023",
-        "title": "Bento: a toolkit for subcellular analysis of spatial transcriptomics data",
-        "url": "https://doi.org/10.1186/s13059-024-03217-7",
-        "year": "2023"
+        "citation": "Palla et al., 2022",
+        "title": "Squidpy: a scalable framework for spatial omics analysis",
+        "url": "https://doi.org/10.1038/s41592-021-01358-2",
+        "year": "2022"
     }
 }

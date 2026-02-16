@@ -7,9 +7,9 @@
     "guid": "35DF79BE-97F5-4C7F-BD80-B55D4D214A67",
     "name": "Dries et al. - 2021 - Giotto a toolbox for integrative analysis and visualization of spatial expression data.pdf",
     "bibliography": {
-        "citation": "2025",
-        "title": "Revealing tissue architecture through the hypercomplex Fourier analysis of spatial transcriptomics data",
-        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-105016586931&doi=10.1093%2Fbioadv%2Fvbaf191&partnerID=40&md5=09061e07f6a9e20e2195af72e5ed4d60",
-        "year": "2025"
+        "citation": "Dries et al., 2021",
+        "title": "Giotto: a toolbox for integrative analysis and visualization of spatial expression data",
+        "url": "https://doi.org/10.1186/s13059-021-02286-2",
+        "year": "2021"
     }
 }

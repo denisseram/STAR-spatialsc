@@ -7,9 +7,9 @@
     "guid": "40824B2F-76B2-4C50-8C13-D1D592E10AF1",
     "name": "Bao et al. - 2025 - Spatially informed graph transformers for spatially resolved transcriptomics.pdf",
     "bibliography": {
-        "citation": "2024",
-        "title": "SAW: an efficient and accurate data analysis workflow for Stereo-seq spatial transcriptomics",
-        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-85188203289&doi=10.46471%2Fgigabyte.111&partnerID=40&md5=c41642d8911b5a003a55f61fb5b900e2",
-        "year": "2024"
+        "citation": "Bao et al., 2025",
+        "title": "Spatially informed graph transformers for spatially resolved transcriptomics",
+        "url": "https://api.semanticscholar.org/CorpusId:277595305",
+        "year": "2025"
     }
 }

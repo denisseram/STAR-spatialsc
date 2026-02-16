@@ -7,9 +7,9 @@
     "guid": "9C8FBD0E-3121-4993-A96B-20955CACBC39",
     "name": "Long et al. - 2023 - Spatially informed clustering, integration, and deconvolution of spatial transcriptomics with GraphS.pdf",
     "bibliography": {
-        "citation": "2024",
-        "title": "GraphCVAE: Uncovering cell heterogeneity and therapeutic target discovery through residual and contrastive learning",
-        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-85208076538&doi=10.1016%2Fj.lfs.2024.123208&partnerID=40&md5=1d9d55484cec5bb5be0a4d59d9570bbf",
-        "year": "2024"
+        "citation": "Long et al., 2023",
+        "title": "Spatially informed clustering, integration, and deconvolution of spatial transcriptomics with GraphST",
+        "url": "https://doi.org/10.1038/s41467-023-36796-3",
+        "year": "2023"
     }
 }

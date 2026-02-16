@@ -7,9 +7,9 @@
     "guid": "147A5263-C8A5-4CBF-9CB1-D21F0E5FC7CD",
     "name": "Zhou Q. et al. - 2025 - Path-MGCN a pathway activity-based multi-view graph convolutional network for determining spatial d.pdf",
     "bibliography": {
-        "citation": "2024",
-        "title": "Deciphering spatial domains from spatially resolved transcriptomics through spatially regularized deep graph networks",
-        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-85211136821&doi=10.1186%2Fs12864-024-11072-w&partnerID=40&md5=ea5074c14561b7315738c7f18ad4d5b0",
-        "year": "2024"
+        "citation": "2025",
+        "title": "Path-MGCN: a pathway activity-based multi-view graph convolutional network for determining spatial domains",
+        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-105011753295&doi=10.1093%2Fbib%2Fbbaf365&partnerID=40&md5=45c65d3cecd41e92e2187d4dc54234c3",
+        "year": "2025"
     }
 }

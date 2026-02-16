@@ -7,9 +7,9 @@
     "guid": "35D55FC7-89D2-463F-A35B-529950BA426F",
     "name": "Yuan and Bar-joseph - 2020 - GCNG graph convolutional networks for inferring gene interaction from spatial transcriptomics data.pdf",
     "bibliography": {
-        "citation": "2025",
-        "title": "TissueMosaic: Self-supervised learning of tissue representations enables differential spatial transcriptomics across samples",
-        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-105015634834&doi=10.1016%2Fj.cels.2025.101394&partnerID=40&md5=3bf0160a67b3657bb61165fc2ab35d3d",
-        "year": "2025"
+        "citation": "Yuan et al., 2020",
+        "title": "GCNG: graph convolutional networks for inferring gene interaction from spatial transcriptomics data",
+        "url": "https://doi.org/10.1186/s13059-020-02214-w",
+        "year": "2020"
     }
 }

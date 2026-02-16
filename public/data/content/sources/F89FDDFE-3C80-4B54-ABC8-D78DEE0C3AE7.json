@@ -7,9 +7,9 @@
     "guid": "F89FDDFE-3C80-4B54-ABC8-D78DEE0C3AE7",
     "name": "Zhang X. et al. - 2023 - ISC.MEB An R package for multi-sample spatial clustering analysis of spatial transcriptomics data.pdf",
     "bibliography": {
-        "citation": "2025",
-        "title": "Unveiling fine-scale spatial structures and amplifying gene expression signals in ultra-large ST slices with HERGAST",
-        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-105003806027&doi=10.1038%2Fs41467-025-59139-w&partnerID=40&md5=69610eb705f2de95ce4f7a5381298482",
-        "year": "2025"
+        "citation": "2023",
+        "title": "ISC.MEB: An R package for multi-sample spatial clustering analysis of spatial transcriptomics data",
+        "url": "https://www.scopus.com/inward/record.uri?eid=2-s2.0-85149970258&doi=10.1093%2Fbioadv%2Fvbad019&partnerID=40&md5=a71292699df19c7e236b00767a2e2365",
+        "year": "2023"
     }
 }

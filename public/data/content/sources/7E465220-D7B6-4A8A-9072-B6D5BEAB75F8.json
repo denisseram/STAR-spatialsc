@@ -7,9 +7,9 @@
     "guid": "7E465220-D7B6-4A8A-9072-B6D5BEAB75F8",
     "name": "Klein et al. - 2025 - Mapping cells through time and space with moscot.pdf",
     "bibliography": {
-        "citation": "Budhkar et al., 2024",
-        "title": "xSiGra: explainable model for single-cell spatial data elucidation",
-        "url": "https://api.semanticscholar.org/CorpusId:271796030",
-        "year": "2024"
+        "citation": "Klein et al., 2025",
+        "title": "Mapping cells through time and space with moscot",
+        "url": "https://www.nature.com/articles/s41586-024-08453-2",
+        "year": "2025"
     }
 }

@@ -103,19 +103,21 @@ def normalize_string(s):
     return s
 
 
+def get_similarity_ratio(s1, s2):
+    """Calculate similarity ratio between two strings (0.0 to 1.0)."""
+    return difflib.SequenceMatcher(None, s1, s2).ratio()
+
+
 def match_source_to_biblio(source_name, source_attrs, title_lookup):
-    """Try to match a source to bibliography data by title, with debug prints."""
+    """Try to match a source to bibliography data by title, with improved matching strategies."""
     
     filename = source_attrs.get('name', '')
-    print(filename, "YA BASTA")
     if not filename:
         filename = source_name
     
     normalized_filename = normalize_string(filename)
     normalized_source_name = normalize_string(source_name)
 
-
-    
     # Strategy 1: exact match with normalized filename
     if normalized_filename in title_lookup:
         print(f"[green]✓ Exact match filename: {filename}[/green]")
@@ -126,18 +128,28 @@ def match_source_to_biblio(source_name, source_attrs, title_lookup):
         print(f"[green]✓ Exact match source name: {source_name}[/green]")
         return title_lookup[normalized_source_name]
     
-    # Strategy 3: fuzzy match (contains)
-    if len(normalized_filename) > 15:
-        for title, biblio_info in title_lookup.items():
-            shorter = min(normalized_filename, title, key=len)
-            longer = max(normalized_filename, title, key=len)
-
-            # print each comparison
-            print(f"[yellow]Comparing:[/yellow] '{shorter}' in '{longer}'?")
-            
-            if shorter in longer:
-                print(f"[yellow]≈ Fuzzy match: {filename} ≈ {biblio_info['title'][:50]}...[/yellow]")
-                return biblio_info
+    # Strategy 3: fuzzy match using similarity ratio (not just substring containment)
+    best_match = None
+    best_ratio = 0.7  # Require at least 70% similarity
+    
+    for title, biblio_info in title_lookup.items():
+        # Try similarity with filename
+        ratio_filename = get_similarity_ratio(normalized_filename, title)
+        if ratio_filename > best_ratio:
+            best_ratio = ratio_filename
+            best_match = biblio_info
+            print(f"[yellow]≈ Fuzzy match (filename): {filename} ({best_ratio:.1%}) ≈ {biblio_info['title'][:50]}...[/yellow]")
+        
+        # Try similarity with source name (only if filename match was not strong)
+        if ratio_filename < 0.9:
+            ratio_source = get_similarity_ratio(normalized_source_name, title)
+            if ratio_source > best_ratio:
+                best_ratio = ratio_source
+                best_match = biblio_info
+                print(f"[yellow]≈ Fuzzy match (source): {source_name} ({best_ratio:.1%}) ≈ {biblio_info['title'][:50]}...[/yellow]")
+    
+    if best_match:
+        return best_match
     
     print(f"[red]✗ No match: {filename}[/red]")
     return None

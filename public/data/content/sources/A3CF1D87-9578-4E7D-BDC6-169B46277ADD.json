@@ -7,9 +7,9 @@
     "guid": "A3CF1D87-9578-4E7D-BDC6-169B46277ADD",
     "name": "Dong and Zhang - 2021 - Deciphering spatial domains from spatially resolved transcriptomics with an adaptive graph attention.pdf",
     "bibliography": {
-        "citation": "Pang et al., 2025",
-        "title": "STForte: tissue context-specific encoding and consistency-aware spatial imputation for spatially resolved transcriptomics",
-        "url": "https://api.semanticscholar.org/CorpusId:277953095",
-        "year": "2025"
+        "citation": "Dong et al., 2021",
+        "title": "Deciphering spatial domains from spatially resolved transcriptomics with an adaptive graph attention auto-encoder",
+        "url": "https://doi.org/10.1038/s41467-022-29439-6",
+        "year": "2021"
     }
 }
