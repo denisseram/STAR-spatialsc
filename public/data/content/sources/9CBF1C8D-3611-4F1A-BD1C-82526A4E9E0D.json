@@ -5,5 +5,11 @@
     "creationDateTime": "2025-12-10T13:01:05Z",
     "path": "internal://98BFEDF0-33B4-4FDE-9608-914EC16BC582.pdf",
     "guid": "9CBF1C8D-3611-4F1A-BD1C-82526A4E9E0D",
-    "name": "Pola\u0144ski et al. - 2024 - Bin2cell reconstructs cells from high resolution Visium HD data.pdf"
+    "name": "Pola\u0144ski et al. - 2024 - Bin2cell reconstructs cells from high resolution Visium HD data.pdf",
+    "bibliography": {
+        "citation": "Pola\u0144ski et al., 2024",
+        "title": "Bin2cell reconstructs cells from high resolution Visium HD data",
+        "url": "https://academic.oup.com/bioinformatics/article/doi/10.1093/bioinformatics/btae546/7754061",
+        "year": "2024"
+    }
 }

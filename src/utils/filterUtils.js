@@ -4,6 +4,25 @@
 
 import { FILTER_MODES } from "./constants.js";
 
+// Hidden codes that should be used for filtering but not displayed
+const HIDDEN_CODES = ["subset.interactivity"];
+
+/**
+ * Check if a code should be hidden from display
+ * @param {string} code - Code to check
+ * @returns {boolean} True if code should be hidden
+ */
+export const isHiddenCode = (code) => HIDDEN_CODES.includes(code);
+
+/**
+ * Filter out hidden codes from a code array
+ * @param {string[]} codes - Array of codes
+ * @returns {string[]} Codes excluding hidden codes
+ */
+export const filterOutHiddenCodes = (codes) => {
+  return codes.filter(code => !isHiddenCode(code));
+};
+
 /**
  * Filter figures based on selected codes and filter mode
  * @param {object[]} figures - Array of figure objects

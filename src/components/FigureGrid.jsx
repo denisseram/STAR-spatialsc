@@ -18,6 +18,7 @@ export default function FigureGrid({ figures = [] }) {
   const [modal, setModal] = useState(null);
   const [showCodes, setShowCodes] = useState(true);
   const [filterMode, setFilterMode] = useState(FILTER_MODES.AND);
+  const [showInteractivityOnly, setShowInteractivityOnly] = useState(false);
 
   // Use custom hooks for state and calculations
   const { grouped: groupedCodes, misc: miscCodes, single: singleLevelCodes } = useCodeHierarchy(figures);
@@ -25,6 +26,14 @@ export default function FigureGrid({ figures = [] }) {
   const { selectAll, clearAll } = useCodeBatchOperations(groupedCodes, miscCodes, setSelectedCodes);
   const { filteredFigures, availableCodes } = useFiltering(figures, selectedCodes, filterMode);
   const stats = useStats(figures);
+
+  // Apply interactivity filter if enabled
+  const finalFilteredFigures = useCallback(() => {
+    if (!showInteractivityOnly) return filteredFigures;
+    return filteredFigures.filter((fig) => 
+      (fig.codes || []).includes("subset.interactivity")
+    );
+  }, [filteredFigures, showInteractivityOnly])();
 
   // Event handlers
   const handleImageClick = useCallback((figure) => {
@@ -93,7 +102,7 @@ export default function FigureGrid({ figures = [] }) {
         <main className="main-content">
           <div className="stats">
             <div className="stats-text">
-              Showing <strong>{filteredFigures.length}</strong> of{" "}
+              Showing <strong>{finalFilteredFigures.length}</strong> of{" "}
               <strong>{figures.length}</strong> figures
             </div>
             
@@ -108,15 +117,24 @@ export default function FigureGrid({ figures = [] }) {
                 <span className="slider"></span>
               </label>
             </div>
+
+            <div className="toggle-interactivity-container">
+              <button
+                className={`interactivity-filter-button ${showInteractivityOnly ? "active" : ""}`}
+                onClick={() => setShowInteractivityOnly(!showInteractivityOnly)}
+              >
+                {showInteractivityOnly ? "Show All" : "Interactivity Only"}
+              </button>
+            </div>
           </div>
 
-          {filteredFigures.length === 0 ? (
+          {finalFilteredFigures.length === 0 ? (
             <div className="no-results">
               No figures match the selected codes.
             </div>
           ) : (
             <div className="figures-grid">
-              {filteredFigures.map((fig) => (
+              {finalFilteredFigures.map((fig) => (
                 <FigureCard
                   key={fig.guid}
                   figure={fig}

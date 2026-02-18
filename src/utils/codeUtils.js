@@ -3,6 +3,7 @@
  */
 
 import { CODE_LEVELS } from "./constants.js";
+import { isHiddenCode } from "./filterUtils.js";
 
 /**
  * Parse a code string into father and child parts
@@ -43,9 +44,11 @@ export const groupCodesByHierarchy = (codes) => {
   const single = [];
 
   // Sort codes by level (deepest first) to avoid structure conflicts
-  const sortedCodes = [...codes].sort((a, b) => {
-    return b.split(".").length - a.split(".").length;
-  });
+  const sortedCodes = [...codes]
+    .filter(code => !isHiddenCode(code))  // Filter out hidden codes
+    .sort((a, b) => {
+      return b.split(".").length - a.split(".").length;
+    });
 
   sortedCodes.forEach((code) => {
     const parts = code.split(".");

@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { parseCode } from "../utils/codeUtils.js";
+import { filterOutHiddenCodes } from "../utils/filterUtils.js";
 import { formatDisplayCitation, formatEtAl } from "../utils/citationUtils.js";
 
 /**
@@ -11,7 +12,9 @@ import { formatDisplayCitation, formatEtAl } from "../utils/citationUtils.js";
 export default function FigureCard({ figure, showCodes, onImageClick }) {
   const groupedCodes = useMemo(() => {
     const grouped = {};
-    (figure.codes || []).forEach((code) => {
+    // Filter out hidden codes before grouping
+    const visibleCodes = filterOutHiddenCodes(figure.codes || []);
+    visibleCodes.forEach((code) => {
       const { father, child } = parseCode(code);
       if (!grouped[father]) grouped[father] = [];
       if (child) grouped[father].push(child);
