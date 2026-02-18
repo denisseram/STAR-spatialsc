@@ -60,6 +60,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Remove large image files to reduce deployment size
+      - name: Clean up large files
+        run: |
+          rm -rf dist/data/images
+          du -sh dist/
+
       # Upload dist folder to GitHub Pages
       - name: Upload build output
         uses: actions/upload-pages-artifact@v3
