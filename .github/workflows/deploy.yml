@@ -36,7 +36,7 @@ jobs:
       # (Opcional) instalar dependencias Python si las necesitas
       - name: Install Python dependencies
         run: |
-          pip install -r requirements.txt || true
+          pip install -r requirements.txt
 
       # Download STAR-spatial-taxo.qdpx from Dropbox
       - name: Download QDPX
