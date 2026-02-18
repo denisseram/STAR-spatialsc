@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       # Setup Node (para el frontend)
       - name: Setup Node
@@ -59,12 +61,6 @@ jobs:
       # Build the frontend AFTER data exists
       - name: Build
         run: npm run build
-
-      # Remove large image files to reduce deployment size
-      - name: Clean up large files
-        run: |
-          rm -rf dist/data/images
-          du -sh dist/
 
       # Upload dist folder to GitHub Pages
       - name: Upload build output
