@@ -10,6 +10,7 @@ import CodeHierarchy from "./CodeHierarchy.jsx";
 import FigureCard from "./FigureCard.jsx";
 import Modal from "./Modal.jsx";
 import WordCloud from "./WordCloud.jsx";
+import SemanticSearch from "./SemanticSearch.jsx";
 
 /**
  * FigureGrid - Main component for displaying and filtering figures
@@ -19,6 +20,7 @@ export default function FigureGrid({ figures = [] }) {
   const [showCodes, setShowCodes] = useState(true);
   const [filterMode, setFilterMode] = useState(FILTER_MODES.AND);
   const [showInteractivityOnly, setShowInteractivityOnly] = useState(false);
+  const [semanticSearchResults, setSemanticSearchResults] = useState(null);
 
   // Use custom hooks for state and calculations
   const { grouped: groupedCodes, misc: miscCodes, single: singleLevelCodes } = useCodeHierarchy(figures);
@@ -28,12 +30,21 @@ export default function FigureGrid({ figures = [] }) {
   const stats = useStats(figures);
 
   // Apply interactivity filter if enabled
-  const finalFilteredFigures = useCallback(() => {
+  const afterInteractivityFilter = useCallback(() => {
     if (!showInteractivityOnly) return filteredFigures;
     return filteredFigures.filter((fig) => 
       (fig.codes || []).includes("subset.interactivity")
     );
   }, [filteredFigures, showInteractivityOnly])();
+
+  // Apply semantic search filter if results exist
+  const finalFilteredFigures = useCallback(() => {
+    if (!semanticSearchResults || semanticSearchResults.length === 0) {
+      return afterInteractivityFilter;
+    }
+    const resultGuids = new Set(semanticSearchResults.map(fig => fig.guid));
+    return afterInteractivityFilter.filter(fig => resultGuids.has(fig.guid));
+  }, [afterInteractivityFilter, semanticSearchResults])();
 
   // Event handlers
   const handleImageClick = useCallback((figure) => {
@@ -47,6 +58,14 @@ export default function FigureGrid({ figures = [] }) {
   }, []);
 
   const closeModal = useCallback(() => setModal(null), []);
+
+  const handleSemanticSearchResults = useCallback((results) => {
+    setSemanticSearchResults(results);
+  }, []);
+
+  const clearSemanticSearch = useCallback(() => {
+    setSemanticSearchResults(null);
+  }, []);
 
   return (
     <div className="page">
@@ -126,6 +145,17 @@ export default function FigureGrid({ figures = [] }) {
                 {showInteractivityOnly ? "Show All" : "Interactivity Only"}
               </button>
             </div>
+
+            {singleLevelCodes.length > 0 && (
+              <div className="semantic-search-container">
+                <SemanticSearch
+                  figures={figures}
+                  singleLevelCodes={singleLevelCodes}
+                  onResults={handleSemanticSearchResults}
+                  onClear={clearSemanticSearch}
+                />
+              </div>
+            )}
           </div>
 
           {finalFilteredFigures.length === 0 ? (
