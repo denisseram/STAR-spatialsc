@@ -48,7 +48,7 @@ jobs:
       # Download STAR-spatial.json from Dropbox
       - name: Download bibliography JSON
         run: |
-          wget -O STAR-spatial-taxo.json "https://drive.jku.at/filr/public-link/file-download/0cce88f09b463f35019c7648abf212d3/79032/6175549008423465381/STAR-spatial_taxo_v4.json"
+          wget -O STAR-spatial-taxo.json "https://drive.jku.at/filr/public-link/file-download/0cce88f09cb465a3019d4936fa03034d/80805/8776682810555216597/STAR-spatial.json"
 
       # Run your Python processing script
       - name: Process QDPX → JSON
