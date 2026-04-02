@@ -197,7 +197,9 @@ def extract_data(
     assert project_json, "no project"
 
     out_json = join(out_dir, "output.json")
+    print("Top-level keys:", project_json.keys())
 
+    print("Project keys:", project_json.get("Project", {}).keys())
     # Load bibliography data
     title_lookup = {}
     if biblio_json_path:
