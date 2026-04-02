@@ -629,6 +629,36 @@ body {
   font-weight: 600;
 }
 
+.toggle-hidden-by-default-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hidden-by-default-button {
+  padding: 8px 12px;
+  background: #f9fafb;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  color: #333;
+}
+
+.hidden-by-default-button:hover {
+  background: #e0e0e0;
+  border-color: #aaa;
+}
+
+.hidden-by-default-button.active {
+  background: #0e699d;
+  border-color: #0e699d;
+  color: white;
+  font-weight: 600;
+}
+
 /* Switch styles */
 .switch {
   position: relative;

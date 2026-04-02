@@ -7,6 +7,14 @@ import { FILTER_MODES } from "./constants.js";
 // Hidden codes that should be used for filtering but not displayed
 const HIDDEN_CODES = ["subset.interactivity"];
 
+// Codes that should be hidden by default (can be toggled with a button)
+const HIDE_BY_DEFAULT_CODES = [
+  "Other.Other.Schematic diagrams",
+  "Other.Other.Benchmarking (Methods)",
+  "Other.Benchmarking / Method evaluation",
+  "Data.Modality.bulk RNA-seq"
+];
+
 /**
  * Check if a code should be hidden from display
  * @param {string} code - Code to check
@@ -21,6 +29,27 @@ export const isHiddenCode = (code) => HIDDEN_CODES.includes(code);
  */
 export const filterOutHiddenCodes = (codes) => {
   return codes.filter(code => !isHiddenCode(code));
+};
+
+/**
+ * Check if a figure should be hidden by default
+ * @param {object} figure - Figure object
+ * @returns {boolean} True if figure has any hide-by-default codes
+ */
+export const shouldHideByDefault = (figure) => {
+  const figCodes = figure.codes || [];
+  return HIDE_BY_DEFAULT_CODES.some(code => figCodes.includes(code));
+};
+
+/**
+ * Filter out figures with hide-by-default codes (unless showing them)
+ * @param {object[]} figures - Array of figure objects
+ * @param {boolean} showHiddenByDefault - Whether to show figures with hide-by-default codes
+ * @returns {object[]} Filtered figures array
+ */
+export const filterHideByDefault = (figures, showHiddenByDefault) => {
+  if (showHiddenByDefault) return figures;
+  return figures.filter(fig => !shouldHideByDefault(fig));
 };
 
 /**

@@ -4,6 +4,7 @@ import "../styles/FigureGrid.css";
 import { FILTER_MODES } from "../utils/constants.js";
 import { useCodeHierarchy, useFiltering, useStats } from "../hooks/useFiltering.js";
 import { useCodeSelection, useCodeBatchOperations } from "../hooks/useCodeSelection.js";
+import { filterHideByDefault } from "../utils/filterUtils.js";
 
 import CodeButton from "./CodeButton.jsx";
 import CodeHierarchy from "./CodeHierarchy.jsx";
@@ -20,6 +21,7 @@ export default function FigureGrid({ figures = [] }) {
   const [showCodes, setShowCodes] = useState(true);
   const [filterMode, setFilterMode] = useState(FILTER_MODES.AND);
   const [showInteractivityOnly, setShowInteractivityOnly] = useState(false);
+  const [showHiddenByDefault, setShowHiddenByDefault] = useState(false);
   const [semanticSearchResults, setSemanticSearchResults] = useState(null);
 
   // Use custom hooks for state and calculations
@@ -37,14 +39,19 @@ export default function FigureGrid({ figures = [] }) {
     );
   }, [filteredFigures, showInteractivityOnly])();
 
+  // Apply hide-by-default filter
+  const afterHideByDefaultFilter = useCallback(() => {
+    return filterHideByDefault(afterInteractivityFilter, showHiddenByDefault);
+  }, [afterInteractivityFilter, showHiddenByDefault])();
+
   // Apply semantic search filter if results exist
   const finalFilteredFigures = useCallback(() => {
     if (!semanticSearchResults || semanticSearchResults.length === 0) {
-      return afterInteractivityFilter;
+      return afterHideByDefaultFilter;
     }
     const resultGuids = new Set(semanticSearchResults.map(fig => fig.guid));
-    return afterInteractivityFilter.filter(fig => resultGuids.has(fig.guid));
-  }, [afterInteractivityFilter, semanticSearchResults])();
+    return afterHideByDefaultFilter.filter(fig => resultGuids.has(fig.guid));
+  }, [afterHideByDefaultFilter, semanticSearchResults])();
 
   // Event handlers
   const handleImageClick = useCallback((figure) => {
@@ -143,6 +150,15 @@ export default function FigureGrid({ figures = [] }) {
                 onClick={() => setShowInteractivityOnly(!showInteractivityOnly)}
               >
                 {showInteractivityOnly ? "Show All" : "Interactivity Only"}
+              </button>
+            </div>
+
+            <div className="toggle-hidden-by-default-container">
+              <button
+                className={`hidden-by-default-button ${showHiddenByDefault ? "active" : ""}`}
+                onClick={() => setShowHiddenByDefault(!showHiddenByDefault)}
+              >
+                {showHiddenByDefault ? "Hide Diagrams/Benchmarking" : "Show Diagrams/Benchmarking"}
               </button>
             </div>
 
