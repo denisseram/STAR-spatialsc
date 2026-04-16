@@ -15,9 +15,9 @@ export default function FigureCard({ figure, showCodes, onImageClick }) {
     "Task": { text: "232,169,58", bg: "255,232,168" },
     "Visualization": { text: "39,132,96", bg: "143,194,174" }
     */
-    "Data": { text: "58,58,58", bg: "211,211,211" },
-    "Task": { text: "58,58,58", bg: "211,211,211" },
-    "Visualization": { text: "58,58,58", bg: "211,211,211" }
+    "Data": { text: "140,150,160", bg: "238,242,246" },
+    "Task": { text: "140,150,160", bg: "238,242,246" },
+    "Visualization": { text: "140,150,160", bg: "238,242,246" }
   };
 
   const getCategoryColor = (titulo) => {
