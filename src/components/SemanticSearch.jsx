@@ -57,43 +57,21 @@ export default function SemanticSearch({ figures, singleLevelCodes, onImageClick
 
   return (
     <>
-      <div className="semantic-search-container" style={{ marginBottom: '24px', position: 'relative', zIndex: 10 }}>
-        <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#555' }}>
-          Search Questions
-        </h3>
-        
-        <div style={{ marginBottom: '12px' }}>
+      <div className="semantic-search-compact" style={{ position: 'relative', zIndex: 10 }}>
+        <div style={{ marginBottom: '0px' }}>
           <input
             type="text"
-            placeholder="Search by word or question..."
+            placeholder="Search by research questions"
             value={searchQuery}
             onChange={handleSearchChange}
             style={{
-              width: '100%',
-              padding: '8px 10px',
+              width: '250px',
+              padding: '5px 8px',
               border: '1px solid #ddd',
               borderRadius: '4px',
-              fontSize: '13px',
+              fontSize: '11px',
               boxSizing: 'border-box',
               fontFamily: 'inherit'
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: '12px' }}>
-          <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '6px' }}>
-            Match Sensitivity: {Math.round(minSimilarity * 100)}%
-          </label>
-          <input
-            type="range"
-            min="0.3"
-            max="1"
-            step="0.05"
-            value={minSimilarity}
-            onChange={handleSimilarityChange}
-            style={{
-              width: '100%',
-              cursor: 'pointer'
             }}
           />
         </div>

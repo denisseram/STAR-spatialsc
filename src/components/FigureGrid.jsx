@@ -25,7 +25,7 @@ export default function FigureGrid({ figures = [] }) {
   const [semanticSearchResults, setSemanticSearchResults] = useState(null);
 
   // Use custom hooks for state and calculations
-  const { grouped: groupedCodes, misc: miscCodes, single: singleLevelCodes } = useCodeHierarchy(figures);
+  const { uniqueCodes, grouped: groupedCodes, misc: miscCodes, single: singleLevelCodes } = useCodeHierarchy(figures);
   const { selectedCodes, setSelectedCodes, toggleCode } = useCodeSelection(groupedCodes);
   const { selectAll, clearAll } = useCodeBatchOperations(groupedCodes, miscCodes, setSelectedCodes);
   const { filteredFigures, availableCodes } = useFiltering(figures, selectedCodes, filterMode);
@@ -46,12 +46,28 @@ export default function FigureGrid({ figures = [] }) {
 
   // Apply semantic search filter if results exist
   const finalFilteredFigures = useCallback(() => {
-    if (!semanticSearchResults || semanticSearchResults.length === 0) {
-      return afterHideByDefaultFilter;
+    let figures = afterHideByDefaultFilter;
+    
+    if (semanticSearchResults && semanticSearchResults.length > 0) {
+      const resultGuids = new Set(semanticSearchResults.map(fig => fig.guid));
+      figures = figures.filter(fig => resultGuids.has(fig.guid));
     }
-    const resultGuids = new Set(semanticSearchResults.map(fig => fig.guid));
-    return afterHideByDefaultFilter.filter(fig => resultGuids.has(fig.guid));
+    
+    // Sort: figures with multiple codes first, then figures with 1 code, then figures without codes
+    return figures.sort((a, b) => {
+      const aCodeCount = (a.codes && a.codes.length) || 0;
+      const bCodeCount = (b.codes && b.codes.length) || 0;
+      
+      // Prioritize by: multiple codes (2+) > single code (1) > no codes (0)
+      const aScore = aCodeCount > 1 ? 2 : (aCodeCount === 1 ? 1 : 0);
+      const bScore = bCodeCount > 1 ? 2 : (bCodeCount === 1 ? 1 : 0);
+      
+      return bScore - aScore;
+    });
   }, [afterHideByDefaultFilter, semanticSearchResults])();
+
+  // Calculate filtered papers count
+  const filteredPapersCount = new Set(finalFilteredFigures.map(fig => fig.sourceGuid)).size;
 
   // Event handlers
   const handleImageClick = useCallback((figure) => {
@@ -77,10 +93,64 @@ export default function FigureGrid({ figures = [] }) {
   return (
     <div className="page">
       <header className="topbar">
-        <h1 className="topbar-title">Spatial Transcriptomics Survey</h1>
-        <p className="topbar-subtitle">
-          {stats.totalPapers} papers · {stats.totalFigures} figures
-        </p>
+        <div className="topbar-header">
+          <div className="topbar-left">
+            <h1 className="topbar-title">Spatial Transcriptomics Survey</h1>
+            <p className="topbar-subtitle">
+              {stats.totalPapers} papers · {stats.totalFigures} figures · {uniqueCodes.length} codes
+            </p>
+          </div>
+
+          <div className="controls-group">
+            {/* Show Codes Toggle */}
+            <div className="control-item">
+              <span className="control-label">Codes</span>
+              <label className="switch">
+                <input 
+                  type="checkbox" 
+                  checked={showCodes}
+                  onChange={() => setShowCodes(!showCodes)}
+                />
+                <span className="slider"></span>
+              </label>
+            </div>
+
+            {/* Interactivity Button */}
+            <div className="control-item">
+              <button
+                className={`control-button ${showInteractivityOnly ? "active" : ""}`}
+                onClick={() => setShowInteractivityOnly(!showInteractivityOnly)}
+              >
+                {showInteractivityOnly ? "All Figures" : "Interactivity"}
+              </button>
+            </div>
+
+            {/* Benchmarking/Diagrams Toggle */}
+            <div className="control-item">
+              <span className="control-label">Diagrams</span>
+              <label className="switch">
+                <input 
+                  type="checkbox" 
+                  checked={showHiddenByDefault}
+                  onChange={() => setShowHiddenByDefault(!showHiddenByDefault)}
+                />
+                <span className="slider"></span>
+              </label>
+            </div>
+
+            {/* Semantic Search */}
+            {singleLevelCodes.length > 0 && (
+              <div className="control-item">
+                <SemanticSearch
+                  figures={figures}
+                  singleLevelCodes={singleLevelCodes}
+                  onResults={handleSemanticSearchResults}
+                  onClear={clearSemanticSearch}
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </header>
 
       <div className="container">
@@ -129,49 +199,10 @@ export default function FigureGrid({ figures = [] }) {
           <div className="stats">
             <div className="stats-text">
               Showing <strong>{finalFilteredFigures.length}</strong> of{" "}
-              <strong>{figures.length}</strong> figures
+              <strong>{figures.length}</strong> figures · Showing{" "}
+              <strong>{filteredPapersCount}</strong> of{" "}
+              <strong>{stats.totalPapers}</strong> papers
             </div>
-            
-            <div className="toggle-codes-container">
-              <span className="toggle-codes-label">Show Codes</span>
-              <label className="switch">
-                <input 
-                  type="checkbox" 
-                  checked={showCodes}
-                  onChange={() => setShowCodes(!showCodes)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-
-            <div className="toggle-interactivity-container">
-              <button
-                className={`interactivity-filter-button ${showInteractivityOnly ? "active" : ""}`}
-                onClick={() => setShowInteractivityOnly(!showInteractivityOnly)}
-              >
-                {showInteractivityOnly ? "Show All" : "Interactivity Only"}
-              </button>
-            </div>
-
-            <div className="toggle-hidden-by-default-container">
-              <button
-                className={`hidden-by-default-button ${showHiddenByDefault ? "active" : ""}`}
-                onClick={() => setShowHiddenByDefault(!showHiddenByDefault)}
-              >
-                {showHiddenByDefault ? "Hide Diagrams/Benchmarking" : "Show Diagrams/Benchmarking"}
-              </button>
-            </div>
-
-            {singleLevelCodes.length > 0 && (
-              <div className="semantic-search-container">
-                <SemanticSearch
-                  figures={figures}
-                  singleLevelCodes={singleLevelCodes}
-                  onResults={handleSemanticSearchResults}
-                  onClear={clearSemanticSearch}
-                />
-              </div>
-            )}
           </div>
 
           {finalFilteredFigures.length === 0 ? (

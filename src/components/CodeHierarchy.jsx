@@ -16,11 +16,48 @@ export default function CodeHierarchy({
   availableCodes,
   onToggleCode
 }) {
+  // Color mapping for categories
+  const categoryColors = {
+    "Data": "188,68,40",           // Orange-brown
+    "Task": "232,169,58",          // Yellow-orange
+    "Visualization": "39,132,96"  // Blue
+  };
+
+  const getCategoryColor = (titulo) => {
+    return categoryColors[titulo] || null;
+  };
+
+  // Define the order of categories to display
+  const categoryOrder = ["Data", "Task", "Visualization"];
+  
+  // Separate and sort grouped codes
+  const sortedEntries = Object.entries(groupedCodes).sort(([keyA], [keyB]) => {
+    const indexA = categoryOrder.indexOf(keyA);
+    const indexB = categoryOrder.indexOf(keyB);
+    
+    // If both are in the order list, sort by their index
+    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+    // If only A is in the order list, it comes first
+    if (indexA !== -1) return -1;
+    // If only B is in the order list, it comes first
+    if (indexB !== -1) return 1;
+    // If neither are in the order list, maintain alphabetical order
+    return keyA.localeCompare(keyB);
+  });
+
   return (
     <>
-      {Object.entries(groupedCodes).map(([titulo, padres]) => (
+      {sortedEntries.map(([titulo, padres]) => (
         <div key={titulo} className="code-group">
-          <div className="code-titulo-title">{titulo}</div>
+          <div 
+            className="code-titulo-title"
+            style={{
+              color: `rgb(${getCategoryColor(titulo)})`,
+              borderBottomColor: `rgb(${getCategoryColor(titulo)})`
+            }}
+          >
+            {titulo}
+          </div>
           
           {Object.entries(padres).map(([padre, hijos]) => (
             <div key={`${titulo}.${padre}`} className="code-padre-group">
@@ -38,6 +75,7 @@ export default function CodeHierarchy({
                         isActive={selectedCodes.includes(fullCode)}
                         isDisabled={!availableCodes.has(fullCode)}
                         onClick={() => onToggleCode(fullCode)}
+                        categoryColor={getCategoryColor(titulo)}
                       />
                     );
                   })}
@@ -57,6 +95,7 @@ export default function CodeHierarchy({
                         isActive={isParentSelected}
                         isDisabled={!availableCodes.has(parentCode)}
                         onClick={() => onToggleCode(parentCode)}
+                        categoryColor={getCategoryColor(titulo)}
                       />
                       <div className="code-grandchildren-buttons">
                         {Array.from(grandchildren).map((grandchild) => {
@@ -70,6 +109,7 @@ export default function CodeHierarchy({
                               onClick={() => onToggleCode(fullCode)}
                               isSmall
                               isGrandchild={true}
+                              categoryColor={getCategoryColor(titulo)}
                             />
                           );
                         })}

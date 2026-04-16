@@ -8,6 +8,7 @@ import React from "react";
  * @param {function} onClick - Click handler
  * @param {boolean} isSmall - Use smaller styling
  * @param {boolean} isGrandchild - Use grandchild-specific styling
+ * @param {string} categoryColor - RGB color for this category (e.g., "188,68,40")
  */
 export default function CodeButton({
   code,
@@ -15,8 +16,17 @@ export default function CodeButton({
   isDisabled = false,
   onClick,
   isSmall = false,
-  isGrandchild = false
+  isGrandchild = false,
+  categoryColor = null
 }) {
+  const getActiveStyle = () => {
+    if (!isActive || !categoryColor) return {};
+    return {
+      backgroundColor: `rgb(${categoryColor})`,
+      borderColor: `rgb(${categoryColor})`
+    };
+  };
+
   return (
     <button
       className={`code-button ${isSmall ? "small" : ""} ${isGrandchild ? "grandchild" : ""} ${isActive ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
@@ -24,6 +34,7 @@ export default function CodeButton({
       disabled={isDisabled}
       aria-pressed={isActive}
       type="button"
+      style={getActiveStyle()}
     >
       {code}
     </button>

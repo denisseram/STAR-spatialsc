@@ -16,6 +16,7 @@ export default function WordCloud({ figures, filteredFigures }) {
   const canvasRef = useRef(null);
   const [hoveredWord, setHoveredWord] = useState(null);
   const [wordPositions, setWordPositions] = useState([]);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   // Calculate word frequencies from filtered figures
   const wordData = useMemo(() => {
@@ -97,64 +98,98 @@ export default function WordCloud({ figures, filteredFigures }) {
   if (wordData.length === 0) {
     return (
       <div className="word-cloud-container" style={{ marginBottom: '24px' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#555' }}>
-          Research Questions Keywords
-        </h3>
-        <div style={{
-          border: '1px solid #ddd',
-          borderRadius: '4px',
-          backgroundColor: '#fafafa',
-          padding: '20px',
-          textAlign: 'center',
-          color: '#999',
-          fontSize: '13px',
-          height: '250px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          No research questions in current selection
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#555', margin: 0 }}>
+            Research Questions Keywords
+          </h3>
+          <button 
+            onClick={() => setIsExpanded(!isExpanded)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '14px',
+              color: '#666',
+              padding: '0 4px'
+            }}
+          >
+            {isExpanded ? '−' : '+'}
+          </button>
         </div>
+        {isExpanded && (
+          <div style={{
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            backgroundColor: '#fafafa',
+            padding: '20px',
+            textAlign: 'center',
+            color: '#999',
+            fontSize: '13px',
+            height: '250px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            No research questions in current selection
+          </div>
+        )}
       </div>
     );
   }
 
   return (
     <div className="word-cloud-container" style={{ marginBottom: '24px' }}>
-      <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#555' }}>
-        Research Questions Keywords
-      </h3>
-      <div style={{ position: 'relative' }}>
-        <canvas
-          ref={canvasRef}
-          width={WORD_CLOUD_CONFIG.CANVAS_WIDTH}
-          height={WORD_CLOUD_CONFIG.CANVAS_HEIGHT}
-          onMouseMove={handleCanvasMouseMove}
-          style={{ 
-            border: '1px solid #ddd', 
-            borderRadius: '4px',
-            backgroundColor: '#fafafa',
-            display: 'block'
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#555', margin: 0 }}>
+          Research Questions Keywords
+        </h3>
+        <button 
+          onClick={() => setIsExpanded(!isExpanded)}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
+            color: '#666',
+            padding: '0 4px'
           }}
-        />
-        {hoveredWord && (
-          <div style={{
-            position: 'absolute',
-            bottom: '-30px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: 'rgba(0,0,0,0.8)',
-            color: '#fff',
-            padding: '4px 8px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            whiteSpace: 'nowrap',
-            pointerEvents: 'none'
-          }}>
-            {hoveredWord}
-          </div>
-        )}
+        >
+          {isExpanded ? '−' : '+'}
+        </button>
       </div>
+      {isExpanded && (
+        <div style={{ position: 'relative' }}>
+          <canvas
+            ref={canvasRef}
+            width={WORD_CLOUD_CONFIG.CANVAS_WIDTH}
+            height={WORD_CLOUD_CONFIG.CANVAS_HEIGHT}
+            onMouseMove={handleCanvasMouseMove}
+            style={{ 
+              border: '1px solid #ddd', 
+              borderRadius: '4px',
+              backgroundColor: '#fafafa',
+              display: 'block'
+            }}
+          />
+          {hoveredWord && (
+            <div style={{
+              position: 'absolute',
+              bottom: '-30px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              color: '#fff',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '12px',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none'
+            }}>
+              {hoveredWord}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
