@@ -82,55 +82,136 @@ export const generateWordColor = (index, count, maxCount) => {
 };
 
 /**
- * Check if word positioned collides with existing positions
- * @param {object} pos - New word position {x, y, width, height}
- * @param {Array} positions - Array of existing word positions
+ * Check if a word bounding box collides with any existing positions
+ * @param {number} x - Word x position
+ * @param {number} y - Word y position
+ * @param {number} width - Word width
+ * @param {number} height - Word height
+ * @param {Array} positions - Existing positioned words
  * @returns {boolean} True if collision detected
  */
-export const checkCollision = (pos, positions) => {
-  const { PADDING } = WORD_CLOUD_CONFIG;
+const checkWordCollision = (x, y, width, height, positions) => {
+  const padding = 8; // Extra padding around words
   
-  return positions.some(existingPos => {
-    return !(
-      pos.x + pos.width < existingPos.x - PADDING ||
-      pos.x > existingPos.x + existingPos.width + PADDING ||
-      pos.y - pos.height > existingPos.y + PADDING ||
-      pos.y < existingPos.y - existingPos.height - PADDING
-    );
+  return positions.some(pos => {
+    // Calculate bounding boxes with padding
+    const word1Left = x - width / 2 - padding;
+    const word1Right = x + width / 2 + padding;
+    const word1Top = y - height / 2 - padding;
+    const word1Bottom = y + height / 2 + padding;
+    
+    const word2Left = pos.x - pos.width / 2 - padding;
+    const word2Right = pos.x + pos.width / 2 + padding;
+    const word2Top = pos.y - pos.height / 2 - padding;
+    const word2Bottom = pos.y + pos.height / 2 + padding;
+    
+    // AABB (Axis-Aligned Bounding Box) collision detection
+    return !(word1Right < word2Left || 
+             word1Left > word2Right || 
+             word1Bottom < word2Top || 
+             word1Top > word2Bottom);
   });
 };
 
 /**
- * Find random placement for word, attempting to avoid collisions
- * @param {CanvasRenderingContext2D} ctx - Canvas context for text measurement
- * @param {object} word - Word object {text, fontSize}
- * @param {number} width - Canvas width
- * @param {number} height - Canvas height
- * @param {Array} positions - Existing word positions
- * @returns {object|null} Placement coordinates or null if cannot place
+ * Compute word positions using an improved spiral layout algorithm
+ * @param {object[]} words - Array of word objects with text, size, color, rotate
+ * @param {number} width - Container width
+ * @param {number} height - Container height
+ * @returns {object[]} Words with x, y coordinates
  */
-export const findWordPlacement = (ctx, word, width, height, positions) => {
-  const { PADDING, COLLISION_ATTEMPTS } = WORD_CLOUD_CONFIG;
+export const computeWordPositions = (words, width, height) => {
+  const { PADDING } = WORD_CLOUD_CONFIG;
+  const positions = [];
+  const centerX = width / 2;
+  const centerY = height / 2;
   
-  ctx.font = `bold ${word.fontSize}px Arial`;
-  const metrics = ctx.measureText(word.text);
-  const wordWidth = metrics.width;
-  const wordHeight = word.fontSize;
+  // Create temporary canvas for text measurement
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
   
-  let attempts = 0;
-  while (attempts < COLLISION_ATTEMPTS) {
-    const x = Math.random() * (width - wordWidth - PADDING * 2) + PADDING;
-    const y = Math.random() * (height - wordHeight - PADDING * 2) + PADDING + wordHeight;
+  // Sort words by size (largest first) to place bigger words first
+  const sortedWords = [...words].sort((a, b) => b.size - a.size);
+  
+  sortedWords.forEach(word => {
+    ctx.font = `bold ${word.size}px Impact`;
+    const metrics = ctx.measureText(word.text);
+    const wordWidth = metrics.width;
+    const wordHeight = word.size * 1.2; // Add line height factor
     
-    const newPos = { x, y, width: wordWidth, height: wordHeight };
-    const hasCollision = checkCollision(newPos, positions);
+    let placed = false;
+    let angle = 0;
+    let radius = 10;
+    const maxRadius = Math.min(width, height) / 2 - PADDING;
+    const angleStep = 0.05; // Smaller step for finer spiral
     
-    if (!hasCollision) {
-      return { x, y };
+    // Try to place word using spiral
+    while (!placed && radius < maxRadius) {
+      // Try multiple angles at this radius
+      for (let i = 0; i < 72; i++) { // 72 attempts per radius
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        
+        // Check bounds
+        if (x - wordWidth / 2 < PADDING || 
+            x + wordWidth / 2 > width - PADDING ||
+            y - wordHeight / 2 < PADDING ||
+            y + wordHeight / 2 > height - PADDING) {
+          angle += angleStep;
+          continue;
+        }
+        
+        // Check collision with existing words
+        if (!checkWordCollision(x, y, wordWidth, wordHeight, positions)) {
+          placed = true;
+          positions.push({
+            ...word,
+            x,
+            y,
+            width: wordWidth,
+            height: wordHeight
+          });
+          break;
+        }
+        
+        angle += angleStep;
+      }
+      
+      // Increase radius for next iteration
+      radius += 15;
     }
     
-    attempts++;
-  }
+    // If still not placed, try random positions
+    if (!placed) {
+      let randomAttempts = 0;
+      while (!placed && randomAttempts < 50) {
+        const x = centerX + (Math.random() - 0.5) * width * 0.8;
+        const y = centerY + (Math.random() - 0.5) * height * 0.8;
+        
+        if (x - wordWidth / 2 >= PADDING &&
+            x + wordWidth / 2 <= width - PADDING &&
+            y - wordHeight / 2 >= PADDING &&
+            y + wordHeight / 2 <= height - PADDING &&
+            !checkWordCollision(x, y, wordWidth, wordHeight, positions)) {
+          
+          positions.push({
+            ...word,
+            x,
+            y,
+            width: wordWidth,
+            height: wordHeight
+          });
+          placed = true;
+        }
+        randomAttempts++;
+      }
+    }
+  });
   
-  return null;
+  return positions;
 };
+
+/**
+ * Note: d3-cloud library has compatibility issues with Astro/React SSR.
+ * Using computeWordPositions() with spiral algorithm instead for reliable word placement.
+ */

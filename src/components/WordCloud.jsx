@@ -4,8 +4,9 @@ import {
   analyzeWordFrequencies,
   calculateFontSize,
   generateWordColor,
-  findWordPlacement
+  computeWordPositions
 } from "../utils/wordCloudUtils.js";
+import * as d3 from "d3";
 
 /**
  * WordCloud - Display word cloud visualization of codes from filtered figures
@@ -13,9 +14,8 @@ import {
  * @param {object[]} filteredFigures - Currently filtered figures
  */
 export default function WordCloud({ figures, filteredFigures }) {
-  const canvasRef = useRef(null);
+  const svgRef = useRef(null);
   const [hoveredWord, setHoveredWord] = useState(null);
-  const [wordPositions, setWordPositions] = useState([]);
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Calculate word frequencies from filtered figures
@@ -23,77 +23,96 @@ export default function WordCloud({ figures, filteredFigures }) {
     return analyzeWordFrequencies(filteredFigures);
   }, [filteredFigures]);
 
-  // Draw word cloud on canvas
+  // Draw word cloud with D3.js
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || wordData.length === 0) return;
+    if (!svgRef.current || wordData.length === 0) return;
 
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
+    const width = WORD_CLOUD_CONFIG.CANVAS_WIDTH;
+    const height = WORD_CLOUD_CONFIG.CANVAS_HEIGHT;
 
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
+    // Clear previous SVG content
+    d3.select(svgRef.current).selectAll("*").remove();
 
     // Calculate font sizes
     const maxCount = Math.max(...wordData.map(w => w.count));
     const minCount = Math.min(...wordData.map(w => w.count));
 
-    const positions = [];
+    // Prepare word data with sizes and positions
+    const wordsWithData = wordData.map((word, idx) => ({
+      ...word,
+      size: calculateFontSize(word.count, minCount, maxCount),
+      color: generateWordColor(idx, word.count, maxCount),
+      rotate: ~~(Math.random() * 2) * 90
+    }));
 
-    wordData.forEach((word) => {
-      const fontSize = calculateFontSize(word.count, minCount, maxCount);
-      const placement = findWordPlacement(
-        ctx,
-        { ...word, fontSize },
-        width,
-        height,
-        positions
-      );
+    // Compute positions for all words
+    const positionedWords = computeWordPositions(wordsWithData, width, height);
 
-      if (placement) {
-        positions.push({
-          ...word,
-          x: placement.x,
-          y: placement.y,
-          width: ctx.measureText(word.text).width,
-          height: fontSize,
-          fontSize
-        });
-      }
-    });
+    // Create SVG
+    const svg = d3.select(svgRef.current)
+      .attr("width", width)
+      .attr("height", height)
+      .attr("viewBox", `0 0 ${width} ${height}`);
 
-    setWordPositions(positions);
+    // Add background
+    svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .style("fill", "#fafafa");
 
-    // Draw words with varying colors
-    positions.forEach((word, idx) => {
-      ctx.font = `bold ${word.fontSize}px Arial`;
-      ctx.fillStyle = generateWordColor(idx, word.count, maxCount);
-      ctx.fillText(word.text, word.x, word.y);
-    });
+    // Create group for cloud
+    const g = svg.append("g");
 
+    // Create text elements with D3
+    const text = g.selectAll("text")
+      .data(positionedWords, d => d.text);
+
+    // Enter new words
+    text.enter()
+      .append("text")
+      .style("font-family", "Impact")
+      .style("fill", d => d.color)
+      .style("user-select", "none")
+      .style("cursor", "default")
+      .attr("text-anchor", "middle")
+      .attr("dy", ".3em")
+      .text(d => d.text)
+      .attr("transform", d => `translate(${d.x},${d.y})rotate(${d.rotate})`)
+      .style("font-size", d => `${d.size}px`)
+      .style("opacity", 0)
+      .on("mouseover", function(event, d) {
+        setHoveredWord(`${d.text} (${d.count})`);
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .style("opacity", 0.7)
+          .style("font-weight", "bold");
+      })
+      .on("mouseout", function() {
+        setHoveredWord(null);
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .style("opacity", 1)
+          .style("font-weight", "normal");
+      })
+      .transition()
+      .duration(600)
+      .style("opacity", 1);
+
+    // Update existing words
+    text.transition()
+      .duration(600)
+      .style("opacity", 1)
+      .attr("transform", d => `translate(${d.x},${d.y})rotate(${d.rotate})`);
+
+    // Remove exiting words
+    text.exit()
+      .transition()
+      .duration(200)
+      .style("opacity", 0)
+      .remove();
   }, [wordData]);
-
-  // Handle mouse movement for hover tooltip
-  const handleCanvasMouseMove = (e) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const hovered = wordPositions.find(word => {
-      return x >= word.x && x <= word.x + word.width &&
-             y >= word.y - word.height && y <= word.y;
-    });
-
-    if (hovered) {
-      canvas.style.cursor = 'default';
-      setHoveredWord(`${hovered.text} (${hovered.count})`);
-    } else {
-      canvas.style.cursor = 'default';
-      setHoveredWord(null);
-    }
-  };
 
   if (wordData.length === 0) {
     return (
@@ -159,16 +178,16 @@ export default function WordCloud({ figures, filteredFigures }) {
       </div>
       {isExpanded && (
         <div style={{ position: 'relative' }}>
-          <canvas
-            ref={canvasRef}
-            width={WORD_CLOUD_CONFIG.CANVAS_WIDTH}
-            height={WORD_CLOUD_CONFIG.CANVAS_HEIGHT}
-            onMouseMove={handleCanvasMouseMove}
+          <svg
+            ref={svgRef}
             style={{ 
               border: '1px solid #ddd', 
               borderRadius: '4px',
-              backgroundColor: '#fafafa',
-              display: 'block'
+              display: 'block',
+              width: '100%',
+              height: 'auto',
+              maxHeight: '250px',
+              backgroundColor: '#fafafa'
             }}
           />
           {hoveredWord && (
