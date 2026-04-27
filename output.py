@@ -155,7 +155,6 @@ def match_source_to_biblio(source_name, source_attrs, title_lookup):
     return None
 
 
-
 def extract_data(
     unzipped_dir,
     out_dir,
@@ -165,10 +164,19 @@ def extract_data(
     exclude_fignum_codes=True,
     exclude_source_groups=None,
 ):
+    if exclude_source_groups is None:
+        exclude_source_groups = []
+
+    def as_list(x):
+        if x is None:
+            return []
+        if isinstance(x, list):
+            return x
+        return [x]
+
     pdf_dir = join(unzipped_dir, "sources")
     unzipped_files = os.listdir(unzipped_dir)
 
-    # MAXQDA often includes multiple .qde files. We must choose the one that contains <Project>.
     qde_files = [join(unzipped_dir, f) for f in unzipped_files if f.endswith(".qde")]
     if len(qde_files) == 0:
         raise ValueError("No .qde files found")
@@ -176,7 +184,7 @@ def extract_data(
     qde_file = None
     for fpath in qde_files:
         with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
-            text = f.read(5000)  # read only beginning
+            text = f.read(5000)
             if "<Project" in text:
                 qde_file = fpath
                 break
@@ -185,7 +193,6 @@ def extract_data(
         raise ValueError("Could not find the main .qde file containing <Project>")
 
     print(f"[green]Using QDE file:[/green] {qde_file}")
-
 
     with open(qde_file) as f:
         soup = BeautifulSoup(f, "xml")
@@ -198,9 +205,8 @@ def extract_data(
 
     out_json = join(out_dir, "output.json")
     print("Top-level keys:", project_json.keys())
-
     print("Project keys:", project_json.get("Project", {}).keys())
-    # Load bibliography data
+
     title_lookup = {}
     if biblio_json_path:
         title_lookup = load_bibliography(biblio_json_path)
@@ -211,47 +217,53 @@ def extract_data(
     content_quotations_dir = join(out_dir, "content", "quotations")
     content_code_groups_dir = join(out_dir, "content", "code_groups")
     content_source_groups_dir = join(out_dir, "content", "source_groups")
+
     os.makedirs(content_codes_dir, exist_ok=True)
     os.makedirs(content_sources_dir, exist_ok=True)
     os.makedirs(content_quotations_dir, exist_ok=True)
     os.makedirs(content_code_groups_dir, exist_ok=True)
     os.makedirs(content_source_groups_dir, exist_ok=True)
 
-    # Create list of code for which there are corresponding smart codes
     code_names_to_ignore = []
     code_guids_to_ignore = []
+    fignum_code_guids = dict()
 
-    fignum_code_guids = dict()  # GUID to name (e.g., "2a") mapping
-    for code in project_json["Project"]["CodeBook"]["Codes"]["Code"]:
+    top_level_codes = as_list(project_json["Project"]["CodeBook"]["Codes"]["Code"])
+
+    for code in top_level_codes:
         code_attrs = code["attrs"]
         code_name = code_attrs["name"]
+
         if code_name.startswith(smart_code_prefix):
-            code_names_to_ignore.append(code_name[len(smart_code_prefix) :])
+            code_names_to_ignore.append(code_name[len(smart_code_prefix):])
+
         if exclude_fignum_codes and re.match(fignum_regex, code_name) is not None:
             code_names_to_ignore.append(code_name)
             fignum_code_guids[code_attrs["guid"]] = code_name
 
-    for code in project_json["Project"]["CodeBook"]["Codes"]["Code"]:
+    for code in top_level_codes:
         code_attrs = code["attrs"]
         code_name = code_attrs["name"]
+
         if code_name in code_names_to_ignore:
             code_guids_to_ignore.append(code_attrs["guid"])
 
-    # Construct dataframe to enable computation of simple stats
     quotes_rows = []
 
-    # Create separate files for astro
     code_guid_to_name = dict()
+
     for code in [
         c
-        for group in project_json["Project"]["CodeBook"]["Codes"]["Code"]
-        for c in [group] + group.get("Code", [])
+        for group in top_level_codes
+        for c in [group] + as_list(group.get("Code"))
     ]:
         code_attrs = code["attrs"]
         code_name = code_attrs["name"]
+
         if code_name.startswith(smart_code_prefix):
-            code_name = code_name[len(smart_code_prefix) :]
+            code_name = code_name[len(smart_code_prefix):]
             code_attrs["name"] = code_name
+
         code_guid = code_attrs["guid"]
         code_guid_to_name[code_guid] = code_name
 
@@ -259,15 +271,16 @@ def extract_data(
             with open(join(content_codes_dir, f"{code_guid}.json"), "w") as f:
                 json.dump(code_attrs, f, indent=4)
 
-    # Sets can represent code groups (MemberCode) or source groups (MemberSource)
     source_group_name_to_member_source_guids = dict()
-    for code_or_source_group in project_json["Project"].get("Sets", {}).get("Set", []):
+
+    for code_or_source_group in as_list(project_json["Project"].get("Sets", {}).get("Set")):
         if "MemberCode" in code_or_source_group:
             set_attrs = code_or_source_group["attrs"]
             set_guid = set_attrs["guid"]
 
             with open(join(content_code_groups_dir, f"{set_guid}.json"), "w") as f:
                 json.dump(code_or_source_group, f, indent=4)
+
         if "MemberSource" in code_or_source_group:
             set_attrs = code_or_source_group["attrs"]
             set_guid = set_attrs["guid"]
@@ -275,64 +288,60 @@ def extract_data(
             source_group_name = set_attrs["name"]
             source_group_name_to_member_source_guids[source_group_name] = [
                 member["attrs"]["targetGUID"]
-                for member in code_or_source_group["MemberSource"]
+                for member in as_list(code_or_source_group["MemberSource"])
             ]
 
             with open(join(content_source_groups_dir, f"{set_guid}.json"), "w") as f:
                 json.dump(code_or_source_group, f, indent=4)
 
-    # Track bibliography matches
     source_guid_to_biblio = {}
     matched_sources = 0
     total_sources = 0
 
-    for source in project_json["Project"]["Sources"]["PDFSource"]:
+    for source in as_list(project_json["Project"]["Sources"]["PDFSource"]):
         source_attrs = source["attrs"]
         source_guid = source_attrs["guid"]
         source_name = source_attrs["name"]
         total_sources += 1
 
-        # Skip sources that are part of the excluded source groups
         skip_source = False
         if len(exclude_source_groups) > 0:
             for source_group_name in exclude_source_groups:
                 if (
-                    source_guid
-                    in source_group_name_to_member_source_guids[source_group_name]
+                    source_group_name in source_group_name_to_member_source_guids
+                    and source_guid in source_group_name_to_member_source_guids[source_group_name]
                 ):
                     skip_source = True
+
         if skip_source:
             continue
 
-        # Try to match with bibliography
         biblio_info = None
         if biblio_json_path:
             biblio_info = match_source_to_biblio(source_name, source_attrs, title_lookup)
+
             if biblio_info:
                 matched_sources += 1
                 source_guid_to_biblio[source_guid] = biblio_info
-                # Add bibliography info to source attributes
-                source_attrs['bibliography'] = {
-                    'citation': biblio_info['citation'],
-                    'title': biblio_info['title'],
-                    'url': biblio_info['url'],
-                    'year': biblio_info['year']
+
+                source_attrs["bibliography"] = {
+                    "citation": biblio_info["citation"],
+                    "title": biblio_info["title"],
+                    "url": biblio_info["url"],
+                    "year": biblio_info["year"],
                 }
-                for src in project_json["Project"]["Sources"]["PDFSource"]:
+
+                for src in as_list(project_json["Project"]["Sources"]["PDFSource"]):
                     if src["attrs"]["guid"] == source_guid:
                         src["attrs"]["bibliography"] = source_attrs["bibliography"]
 
         with open(join(content_sources_dir, f"{source_guid}.json"), "w") as f:
             json.dump(source_attrs, f, indent=4)
 
-        # there might not be a selection in a PDF
         if "PDFSelection" not in source:
             continue
 
-        # if there's only one selection in a single PDF,
-        # `source["PDFSelection"]` is a dict and not an array
-        if isinstance(source["PDFSelection"], dict):
-            source["PDFSelection"] = [source["PDFSelection"]]
+        source["PDFSelection"] = as_list(source["PDFSelection"])
 
         for quotation in source["PDFSelection"]:
             if "Coding" in quotation:
@@ -347,42 +356,40 @@ def extract_data(
 
                 subfig_num = None
 
-                if isinstance(quotation["Coding"], dict):
-                    quotation["Coding"] = [quotation["Coding"]]
+                quotation["Coding"] = as_list(quotation["Coding"])
 
-                # Remove codes that are to be ignored
                 cleaned_codes_for_quotation = []
+
                 for c in quotation["Coding"]:
                     code_guid = c["CodeRef"]["attrs"]["targetGUID"]
+
                     if code_guid not in code_guids_to_ignore:
                         cleaned_codes_for_quotation.append(c)
 
                     if code_guid in fignum_code_guids:
                         subfig_num = fignum_code_guids[code_guid]
 
-                # Update the quotation with the cleaned codes
                 quotation["Coding"] = cleaned_codes_for_quotation
                 quotation["subfig_num"] = subfig_num
 
-                with open(
-                    join(content_quotations_dir, f"{quotation_guid}.json"), "w"
-                ) as f:
+                with open(join(content_quotations_dir, f"{quotation_guid}.json"), "w") as f:
                     json.dump(quotation, f, indent=4)
 
                 quotes_rows += [
                     {
                         "source_guid": source_guid,
                         "source": source_attrs["name"],
-                        "citation": source_guid_to_biblio.get(source_guid, {}).get('citation', ''),
-                        "paper_title": source_guid_to_biblio.get(source_guid, {}).get('title', ''),
-                        "paper_url": source_guid_to_biblio.get(source_guid, {}).get('url', ''),
-                        "year": source_guid_to_biblio.get(source_guid, {}).get('year', ''),
+                        "citation": source_guid_to_biblio.get(source_guid, {}).get("citation", ""),
+                        "paper_title": source_guid_to_biblio.get(source_guid, {}).get("title", ""),
+                        "paper_url": source_guid_to_biblio.get(source_guid, {}).get("url", ""),
+                        "year": source_guid_to_biblio.get(source_guid, {}).get("year", ""),
                         "merged_subfig_num": subfig_num,
                         "quote_guid": quotation_guid,
                         "coderef_guid": c["CodeRef"]["attrs"]["targetGUID"],
-                        "code_name": code_guid_to_name[
-                            c["CodeRef"]["attrs"]["targetGUID"]
-                        ],
+                        "code_name": code_guid_to_name.get(
+                            c["CodeRef"]["attrs"]["targetGUID"],
+                            "UNKNOWN_CODE"
+                        ),
                     }
                     for c in quotation["Coding"]
                 ]
@@ -401,13 +408,18 @@ def extract_data(
         return None
 
     quotes_df = pd.DataFrame(data=quotes_rows)
-    quotes_df["fig_num"] = quotes_df["merged_subfig_num"].apply(get_fig_num)
-    quotes_df["subfig_num"] = quotes_df["merged_subfig_num"].apply(get_subfig_num)
+
+    if not quotes_df.empty:
+        quotes_df["fig_num"] = quotes_df["merged_subfig_num"].apply(get_fig_num)
+        quotes_df["subfig_num"] = quotes_df["merged_subfig_num"].apply(get_subfig_num)
+    else:
+        quotes_df["fig_num"] = []
+        quotes_df["subfig_num"] = []
+
     quotes_df.to_csv(join(out_dir, "quotes.csv"), index=True)
 
     img_dir = join(out_dir, "images")
 
-    # For each quotation within each source, extract the quoted region as an image file
     for source in sources:
         if source.name == "PDFSource":
             pdf_guid = source["guid"]
@@ -419,6 +431,7 @@ def extract_data(
             os.makedirs(join(img_dir, pdf_guid), exist_ok=True)
 
             selections = source.find_all("PDFSelection")
+
             for selection in selections:
                 sel_page = selection["page"]
                 page = doc.load_page(int(sel_page))
@@ -429,20 +442,18 @@ def extract_data(
                 sel_y2 = page.rect.y1 - int(selection["firstY"])
                 sel_guid = selection["guid"]
 
-                mat = pymupdf.Matrix(8, 8)  # zoom factor 2 in each direction
+                mat = pymupdf.Matrix(8, 8)
 
-                sel_rect = pymupdf.Rect(
-                    sel_x1, sel_y1, sel_x2, sel_y2
-                )  # (x0, y0, x1, y1)
+                sel_rect = pymupdf.Rect(sel_x1, sel_y1, sel_x2, sel_y2)
                 pix = page.get_pixmap(matrix=mat, clip=sel_rect)
 
                 png_file = join(img_dir, pdf_guid, f"{sel_guid}.png")
 
                 with open(png_file, "wb") as f:
                     f.write(pix.tobytes("png"))
-        
-        with open(join(out_dir, "output.json"), "w") as f:
-            json.dump(project_json, f, indent=4)
+
+    with open(join(out_dir, "output.json"), "w") as f:
+        json.dump(project_json, f, indent=4)
 
     print("[green]Done[/green]")
 
