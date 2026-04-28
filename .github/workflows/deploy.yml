@@ -50,6 +50,13 @@ jobs:
         run: |
           wget -O STAR-spatial-taxo.json "https://drive.jku.at/filr/public-link/file-download/0cce88f09cb465a3019d4936fa03034d/80805/8776682810555216597/STAR-spatial.json"
 
+      # Clean previous generated data
+      - name: Clean generated data
+        run: |
+          rm -rf public/data/unzipped
+          rm -f public/data/*.json
+          rm -f public/data/*.csv
+          
       # Run your Python processing script
       - name: Process QDPX → JSON
         run: |
