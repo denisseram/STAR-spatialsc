@@ -67,18 +67,15 @@ export const calculateFontSize = (count, minCount, maxCount) => {
 };
 
 /**
- * Generate HSL color based on index (golden angle distribution)
+ * Generate color from custom palette based on index
  * @param {number} index - Word index
  * @param {number} count - Word frequency count
  * @param {number} maxCount - Maximum frequency in dataset
- * @returns {string} HSL color string
+ * @returns {string} Hex color string
  */
 export const generateWordColor = (index, count, maxCount) => {
-  const hue = (index * 137.5) % 360; // Golden angle for color distribution
-  const saturation = 60 + (count / maxCount) * 20;
-  const lightness = 40 + (count / maxCount) * 10;
-  
-  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  const colors = ["#134074", "#13315c", "#0b2545", "#8da9c4", "#e0e1dd" ];
+  return colors[index % colors.length];
 };
 
 /**
