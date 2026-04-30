@@ -104,7 +104,7 @@ export default function FigureGrid({ figures = [] }) {
           <div className="controls-group">
             {/* Show Codes Toggle */}
             <div className="control-item">
-              <span className="control-label">Codes</span>
+              <span className="control-label">Show Codes</span>
               <label className="switch">
                 <input 
                   type="checkbox" 
@@ -121,13 +121,13 @@ export default function FigureGrid({ figures = [] }) {
                 className={`control-button ${showInteractivityOnly ? "active" : ""}`}
                 onClick={() => setShowInteractivityOnly(!showInteractivityOnly)}
               >
-                {showInteractivityOnly ? "All Figures" : "Interactivity"}
+                {showInteractivityOnly ? "Show All Figures" : "Show Figures from Interactive Papers Only"}
               </button>
             </div>
 
             {/* Benchmarking/Diagrams Toggle */}
             <div className="control-item">
-              <span className="control-label">Diagrams</span>
+              <span className="control-label">Show benchmarking and schematic figures </span>
               <label className="switch">
                 <input 
                   type="checkbox" 
