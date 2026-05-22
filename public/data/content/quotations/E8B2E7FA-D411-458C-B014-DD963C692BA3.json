@@ -168,6 +168,20 @@
                     "targetGUID": "D50E3FCD-364C-410A-9C2C-47BF0E042570"
                 }
             }
+        },
+        {
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "6035FEA9-23A9-455D-983C-A2400233FEDC"
+                }
+            }
+        },
+        {
+            "CodeRef": {
+                "attrs": {
+                    "targetGUID": "97D81406-E00D-4EC2-8353-0AE87EC8179E"
+                }
+            }
         }
     ],
     "source_guid": "8CE644A5-7AB9-483D-AB13-BDDAB72B397A",
