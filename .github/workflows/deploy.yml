@@ -43,7 +43,7 @@ jobs:
       # Download STAR-spatial-taxo.qdpx from Dropbox
       - name: Download QDPX
         run: |
-          wget -O STAR-spatial-taxo.qdpx "https://drive.jku.at/filr/public-link/file-download/0cce88f19e2bbaaa019e366349ee04c9/82075/8641883251945546467/STAR-spatial-vmay17.qdpx"
+          wget -O STAR-spatial-taxo.qdpx "https://drive.jku.at/filr/public-link/file-download/0cce88139db4e7ba019dd4177a7e7172/81532/8184263300788203933/STAR-spatial-v28.qdpx"
 
       # Download STAR-spatial.json from Dropbox
       - name: Download bibliography JSON
