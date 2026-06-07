@@ -9,10 +9,12 @@ const HIDDEN_CODES = ["subset.interactivity"];
 
 // Codes that should be hidden by default (can be toggled with a button)
 const HIDE_BY_DEFAULT_CODES = [
-  "Other.Other.Schematic diagrams",
-  "Other.Other.Benchmarking (Methods)",
   "Other.Benchmarking / Method evaluation",
-  "Data.Modality.bulk RNA-seq"
+  "Other.Other.Schematic diagrams",
+  "Data.Modality.bulk RNA-seq",
+  "Data.Modality.snRNA-seq",
+  "Data.Modality.ATAC-seq",
+  "Data.Modality.Out of scope",
 ];
 
 /**
@@ -28,7 +30,7 @@ export const isHiddenCode = (code) => HIDDEN_CODES.includes(code);
  * @returns {string[]} Codes excluding hidden codes
  */
 export const filterOutHiddenCodes = (codes) => {
-  return codes.filter(code => !isHiddenCode(code));
+  return codes.filter((code) => !isHiddenCode(code));
 };
 
 /**
@@ -38,7 +40,7 @@ export const filterOutHiddenCodes = (codes) => {
  */
 export const shouldHideByDefault = (figure) => {
   const figCodes = figure.codes || [];
-  return HIDE_BY_DEFAULT_CODES.some(code => figCodes.includes(code));
+  return HIDE_BY_DEFAULT_CODES.some((code) => figCodes.includes(code));
 };
 
 /**
@@ -49,7 +51,7 @@ export const shouldHideByDefault = (figure) => {
  */
 export const filterHideByDefault = (figures, showHiddenByDefault) => {
   if (showHiddenByDefault) return figures;
-  return figures.filter(fig => !shouldHideByDefault(fig));
+  return figures.filter((fig) => !shouldHideByDefault(fig));
 };
 
 /**
@@ -64,11 +66,11 @@ export const filterFigures = (figures, selectedCodes, filterMode) => {
 
   return figures.filter((fig) => {
     const figCodes = fig.codes || [];
-    
+
     if (filterMode === FILTER_MODES.AND) {
       return selectedCodes.every((code) => figCodes.includes(code));
     }
-    
+
     return selectedCodes.some((code) => figCodes.includes(code));
   });
 };
@@ -81,11 +83,16 @@ export const filterFigures = (figures, selectedCodes, filterMode) => {
  * @param {string} filterMode - Filter mode (AND or OR)
  * @returns {Set} Set of available codes
  */
-export const calculateAvailableCodes = (figures, uniqueCodes, selectedCodes, filterMode) => {
+export const calculateAvailableCodes = (
+  figures,
+  uniqueCodes,
+  selectedCodes,
+  filterMode,
+) => {
   const available = new Set();
 
   if (selectedCodes.length === 0) {
-    uniqueCodes.forEach(code => available.add(code));
+    uniqueCodes.forEach((code) => available.add(code));
     return available;
   }
 
@@ -98,12 +105,16 @@ export const calculateAvailableCodes = (figures, uniqueCodes, selectedCodes, fil
     const testSelection = [...selectedCodes, code];
     const hasResults = figures.some((fig) => {
       const figCodes = fig.codes || [];
-      
+
       if (filterMode === FILTER_MODES.AND) {
-        return testSelection.every((selectedCode) => figCodes.includes(selectedCode));
+        return testSelection.every((selectedCode) =>
+          figCodes.includes(selectedCode),
+        );
       }
-      
-      return testSelection.some((selectedCode) => figCodes.includes(selectedCode));
+
+      return testSelection.some((selectedCode) =>
+        figCodes.includes(selectedCode),
+      );
     });
 
     if (hasResults) {
