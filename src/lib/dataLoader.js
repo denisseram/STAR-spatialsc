@@ -55,6 +55,18 @@ export function loadSourceMap() {
 }
 
 /**
+ * Some papers were imported into MAXQDA as two separate PDF sources
+ * (duplicate source_guid), which inflates the paper count and splits a
+ * paper's figures across two "papers". Map the duplicate source_guid to
+ * the canonical one (the source that carries the real bibliography entry)
+ * so the paper is only counted once.
+ */
+const DUPLICATE_SOURCE_GUID_ALIASES = {
+  // Ye et al., 2023 - "Spatial-Live" imported twice; canonical source has the bibliography.
+  "4BF96435-A615-45D7-877C-451087C95C94": "D9C049DC-F969-489D-8714-2F4D7A175E06",
+};
+
+/**
  * Extract figure data from quotations with code and source information
  * @param {Array} quotations - Array of quotation objects
  * @param {Object} codeMap - Map of code GUID to code object
@@ -69,18 +81,24 @@ export function extractFigureData(quotations, codeMap, sourceMap, baseUrl) {
       const codingArray = Array.isArray(quotation.Coding)
         ? quotation.Coding
         : [quotation.Coding];
-      
+
       const codeGuids = codingArray.map((c) => c.CodeRef.attrs.targetGUID);
       const codeNames = codeGuids.map((guid) => codeMap[guid]?.name || "Unknown");
-      
+
+      // Merge duplicate source imports into their canonical source_guid so
+      // the paper is counted once, while images still load from the
+      // quotation's original source_guid folder (see imagePath below).
+      const canonicalSourceGuid =
+        DUPLICATE_SOURCE_GUID_ALIASES[quotation.source_guid] || quotation.source_guid;
+
       // Get source info including bibliography
-      const source = sourceMap[quotation.source_guid];
+      const source = sourceMap[canonicalSourceGuid];
       const bibliography = source?.bibliography;
 
       return {
         guid: quotation.attrs.guid,
         name: quotation.attrs.name,
-        sourceGuid: quotation.source_guid,
+        sourceGuid: canonicalSourceGuid,
         sourceName: source?.name || "Unknown",
         subfigNum: quotation.subfig_num,
         codes: codeNames,
