@@ -42,11 +42,24 @@ export const useFiltering = (figures, selectedCodes, filterMode) => {
 };
 
 /**
+ * Some papers were imported into MAXQDA as two separate PDF sources
+ * (duplicate source_guid). Only the overall paper total should treat them
+ * as one paper — filtered/per-code counts elsewhere intentionally keep
+ * counting them separately, since collapsing them there would also drop
+ * figures that only exist under one of the two source_guids.
+ */
+const DUPLICATE_SOURCE_GUID_ALIASES = {
+  "4BF96435-A615-45D7-877C-451087C95C94": "D9C049DC-F969-489D-8714-2F4D7A175E06",
+};
+
+/**
  * Custom hook for computing basic statistics
  */
 export const useStats = (figures) => {
   return useMemo(() => ({
     totalFigures: figures.length,
-    totalPapers: new Set(figures.map((f) => f.sourceGuid)).size
+    totalPapers: new Set(
+      figures.map((f) => DUPLICATE_SOURCE_GUID_ALIASES[f.sourceGuid] || f.sourceGuid)
+    ).size
   }), [figures]);
 };

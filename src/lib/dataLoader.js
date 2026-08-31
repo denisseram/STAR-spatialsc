@@ -56,10 +56,13 @@ export function loadSourceMap() {
 
 /**
  * Some papers were imported into MAXQDA as two separate PDF sources
- * (duplicate source_guid), which inflates the paper count and splits a
- * paper's figures across two "papers". Map the duplicate source_guid to
- * the canonical one (the source that carries the real bibliography entry)
- * so the paper is only counted once.
+ * (duplicate source_guid) — one of the two carries the real bibliography
+ * entry, the other doesn't. Use the canonical source's bibliography for
+ * display so both imports show the correct paper title/citation. This only
+ * affects the displayed metadata, not `sourceGuid` itself, so per-paper
+ * counts elsewhere (filtered results, code breakdowns) are unaffected —
+ * only the overall paper total (see useStats in useFiltering.js) treats
+ * them as one paper.
  */
 const DUPLICATE_SOURCE_GUID_ALIASES = {
   // Ye et al., 2023 - "Spatial-Live" imported twice; canonical source has the bibliography.
@@ -85,20 +88,17 @@ export function extractFigureData(quotations, codeMap, sourceMap, baseUrl) {
       const codeGuids = codingArray.map((c) => c.CodeRef.attrs.targetGUID);
       const codeNames = codeGuids.map((guid) => codeMap[guid]?.name || "Unknown");
 
-      // Merge duplicate source imports into their canonical source_guid so
-      // the paper is counted once, while images still load from the
-      // quotation's original source_guid folder (see imagePath below).
+      // Get source info including bibliography, falling back to the
+      // canonical duplicate source when this one has no bibliography.
       const canonicalSourceGuid =
         DUPLICATE_SOURCE_GUID_ALIASES[quotation.source_guid] || quotation.source_guid;
-
-      // Get source info including bibliography
-      const source = sourceMap[canonicalSourceGuid];
-      const bibliography = source?.bibliography;
+      const source = sourceMap[quotation.source_guid];
+      const bibliography = source?.bibliography || sourceMap[canonicalSourceGuid]?.bibliography;
 
       return {
         guid: quotation.attrs.guid,
         name: quotation.attrs.name,
-        sourceGuid: canonicalSourceGuid,
+        sourceGuid: quotation.source_guid,
         sourceName: source?.name || "Unknown",
         subfigNum: quotation.subfig_num,
         codes: codeNames,
