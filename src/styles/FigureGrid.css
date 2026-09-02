@@ -873,16 +873,29 @@ input:checked + .slider:before {
   border-color: #FAAA12;
 }
 
+.code-hijo-group {
+  margin-bottom: 6px;
+}
+
 .code-grandchildren-buttons {
-  margin-left: 1rem;
+  margin-left: 1.25rem;
+  margin-top: 4px;
+  padding-left: 10px;
+  border-left: 2px solid #e5e7eb;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
 .code-button.small {
-  font-size: 0.8em;
-  padding: 2px 6px;
+  font-size: 8px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.code-button.small.disabled {
+  background-color: #f3f4f6;
 }
 
 
