@@ -5,7 +5,7 @@
 import { FILTER_MODES } from "./constants.js";
 
 // Hidden codes that should be used for filtering but not displayed
-const HIDDEN_CODES = ["subset.interactivity"];
+const HIDDEN_CODES = ["subset.interactivity", "spatial use.abstract"];
 
 // Codes that should be hidden by default (can be toggled with a button)
 const HIDE_BY_DEFAULT_CODES = [
