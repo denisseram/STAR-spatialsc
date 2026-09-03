@@ -1,69 +1,33 @@
 import React, { useMemo } from "react";
-import { filterOutHiddenCodes } from "../utils/filterUtils.js";
+import { groupDisplayCodes } from "../utils/codeUtils.js";
 import { formatDisplayCitation, formatEtAl } from "../utils/citationUtils.js";
+import { CATEGORY_ORDER } from "../utils/constants.js";
 
 /**
- * FigureCard - Display a single figure with metadata and codes
+ * FigureCard - Summary card for one figure: preview, paper context,
+ * the figure's full set of classification attributes (ordered Data ->
+ * Task -> Visualization) laid out as a compact two-column grid, the
+ * research question last, and explicit actions.
  * @param {object} figure - Figure data object
- * @param {boolean} showCodes - Whether to display code information
- * @param {function} onImageClick - Handler for image click
+ * @param {boolean} showCodes - Whether to display classification attributes
+ * @param {function} onOpenDetail - Opens the figure detail modal
  */
-export default function FigureCard({ figure, showCodes, onImageClick }) {
-  const categoryColors = {
-    /**
-    "Data": { text: "188,68,40", bg: "207,156,145" },
-    "Task": { text: "232,169,58", bg: "255,232,168" },
-    "Visualization": { text: "39,132,96", bg: "143,194,174" }
-    */
-    "Data": { text: "140,150,160", bg: "238,242,246" },
-    "Task": { text: "140,150,160", bg: "238,242,246" },
-    "Visualization": { text: "140,150,160", bg: "238,242,246" }
-  };
+export default function FigureCard({ figure, showCodes, onOpenDetail }) {
+  const { main: attributes, single: questionCodes } = useMemo(
+    () => groupDisplayCodes(figure.codes || []),
+    [figure.codes]
+  );
 
-  const getCategoryColor = (titulo) => {
-    return categoryColors[titulo] || { text: "107,114,128", bg: "229,231,235" }; // gray by default
-  };
-
-  const groupedCodes = useMemo(() => {
-    const codesList = [];
-    const singleCodes = [];
-    // Filter out hidden codes before grouping
-    const visibleCodes = filterOutHiddenCodes(figure.codes || []);
-    visibleCodes.forEach((code) => {
-      const parts = code.split(".");
-      let displayText = "";
-      let titulo = "";
-      
-      if (parts.length === 3) {
-        // Format: 1.2.3 -> "2 : 3"
-        titulo = parts[0];
-        displayText = `${parts[1]} : ${parts[2]}`;
-      } else if (parts.length === 4) {
-        // Format: 1.2.3.4 -> "2 : 3 : 4"
-        titulo = parts[0];
-        displayText = `${parts[1]} : ${parts[2]} : ${parts[3]}`;
-      } else if (parts.length === 2) {
-        // Format: 1.2 -> "2"
-        titulo = parts[0];
-        displayText = parts[1];
-      } else if (parts.length === 1) {
-        // Codes without dots - white background with black text
-        singleCodes.push({
-          text: code,
-          titulo: "",
-          colors: { text: "0,0,0", bg: "255,255,255" }
-        });
-        return;
-      }
-      
-      codesList.push({
-        text: displayText,
-        titulo: titulo,
-        colors: getCategoryColor(titulo)
-      });
+  const orderedAttributes = useMemo(() => {
+    return [...attributes].sort((a, b) => {
+      const indexA = CATEGORY_ORDER.indexOf(a.titulo);
+      const indexB = CATEGORY_ORDER.indexOf(b.titulo);
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return 0;
     });
-    return { main: codesList, single: singleCodes };
-  }, [figure.codes]);
+  }, [attributes]);
 
   const displayCitation = useMemo(() => {
     return formatDisplayCitation({
@@ -73,91 +37,80 @@ export default function FigureCard({ figure, showCodes, onImageClick }) {
     });
   }, [figure.citation, figure.sourceName, figure.year]);
 
+  const imageAlt = figure.paperTitle
+    ? `Figure from "${figure.paperTitle}"`
+    : figure.name || "Figure preview";
+
   return (
-    <div className="figure-card">
+    <article className="figure-card">
       <div className="figure-image-wrap">
-        <img
-          src={figure.imagePath}
-          alt={figure.name}
-          className="figure-image"
-          onClick={onImageClick}
-        />
+        <button
+          type="button"
+          className="figure-image-button"
+          onClick={() => onOpenDetail(figure)}
+          aria-label={`Open figure${figure.paperTitle ? ` from ${figure.paperTitle}` : ""}`}
+        >
+          <img src={figure.imagePath} alt={imageAlt} className="figure-image" loading="lazy" />
+        </button>
       </div>
-      
+
       <div className="figure-info">
         {displayCitation && (
-          <div 
+          <div
             className="figure-citation"
-            dangerouslySetInnerHTML={{
-              __html: formatEtAl(displayCitation)
-            }}
+            dangerouslySetInnerHTML={{ __html: formatEtAl(displayCitation) }}
           />
         )}
-        
-        {figure.paperTitle && (
-          <div className="figure-paper-title">{figure.paperTitle}</div>
+
+        {figure.paperTitle ? (
+          <h3 className="figure-paper-title" title={figure.paperTitle}>
+            {figure.paperTitle}
+          </h3>
+        ) : (
+          !displayCitation && <div className="figure-title">{figure.name}</div>
         )}
-        
-        {!displayCitation && (
-          <>
-            <div className="figure-title">{figure.name}</div>
-            <div className="figure-source">{figure.sourceName}</div>
-          </>
-        )}
-        
-        {showCodes && (
-          <div>
-            <div className="figure-codes">
-              {groupedCodes.main.map((codeObj, index) => (
-                <div 
-                  key={index} 
-                  className="code-button"
-                  style={{
-                    color: `rgb(${codeObj.colors.text})`,
-                    backgroundColor: `rgb(${codeObj.colors.bg})`,
-                    borderColor: `rgb(${codeObj.colors.text})`
-                  }}
-                >
-                  {codeObj.text}
-                </div>
-              ))}
-            </div>
-            {groupedCodes.single.length > 0 && (
-              <div className="figure-codes-single">
-                <div className="single-codes-label"></div>
-                <div className="single-codes-list">
-                  {groupedCodes.single.map((codeObj, index) => (
-                    <div 
-                      key={`single-${index}`} 
-                      className="code-button code-button-single"
-                      style={{
-                        color: `rgb(${codeObj.colors.text})`,
-                        backgroundColor: `rgb(${codeObj.colors.bg})`,
-                        borderColor: `rgb(${codeObj.colors.text})`
-                      }}
-                    >
-                      {codeObj.text}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
+        {showCodes && orderedAttributes.length > 0 && (
+          <div className="figure-codes-grid">
+            {orderedAttributes.map((attr) => (
+              <span
+                key={attr.code}
+                className="attribute-tag"
+                title={attr.text}
+                style={attr.color ? { borderColor: `rgb(${attr.color})` } : undefined}
+              >
+                {attr.text}
+              </span>
+            ))}
           </div>
         )}
-        
-        {figure.paperUrl && (
-          <div className="paper-link-container">
-            <a 
-              href={figure.paperUrl} 
-              target="_blank" 
+
+        {questionCodes.length > 0 && (
+          <div className="figure-attributes">
+            {questionCodes.map((q) => (
+              <span key={q.code} className="attribute-tag attribute-tag-question" title={q.text}>
+                {q.text}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="figure-actions">
+          <button type="button" className="figure-action-primary" onClick={() => onOpenDetail(figure)}>
+            Open figure
+          </button>
+          {figure.paperUrl && (
+            <a
+              href={figure.paperUrl}
+              target="_blank"
               rel="noopener noreferrer"
-              className="paper-link-button"
+              className="figure-action-secondary"
             >
-              Link
+              View paper
             </a>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </article>
   );
 }

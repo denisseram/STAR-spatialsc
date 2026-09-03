@@ -2,7 +2,7 @@
  * Filtering utilities for figures based on codes and filter mode
  */
 
-import { FILTER_MODES } from "./constants.js";
+import { FILTER_MODES, SORT_OPTIONS } from "./constants.js";
 
 // Hidden codes that should be used for filtering but not displayed
 const HIDDEN_CODES = ["subset.interactivity", "spatial use.abstract"];
@@ -123,4 +123,93 @@ export const calculateAvailableCodes = (
   });
 
   return available;
+};
+
+/**
+ * Count how many figures (within the current search/toggle context, before
+ * code-filtering) carry each code. Used to show real result counts next to
+ * filter values in the sidebar.
+ * @param {object[]} figures - Figures to count over
+ * @param {string[]} uniqueCodes - All known code strings
+ * @returns {Map<string, number>} Map of code -> figure count
+ */
+export const calculateCodeCounts = (figures, uniqueCodes) => {
+  const counts = new Map(uniqueCodes.map((code) => [code, 0]));
+
+  figures.forEach((fig) => {
+    (fig.codes || []).forEach((code) => {
+      if (counts.has(code)) {
+        counts.set(code, counts.get(code) + 1);
+      }
+    });
+  });
+
+  return counts;
+};
+
+/**
+ * Parse a figure's publication year into a comparable number.
+ * @param {string|number|null} year
+ * @returns {number|null} Parsed year, or null if not a valid year
+ */
+export const parseFigureYear = (year) => {
+  const parsed = parseInt(year, 10);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+/**
+ * Sort figures according to a supported sort option.
+ *
+ * "Relevance" has no independent ordering of its own: with an active search
+ * it preserves the incoming (already relevance-ranked) order from the
+ * search, and otherwise falls back to the app's default ordering (figures
+ * with more classification codes first).
+ *
+ * @param {object[]} figures - Figures to sort (already filtered)
+ * @param {string} sortOption - One of SORT_OPTIONS
+ * @param {boolean} isSearchActive - Whether a research-question search is active
+ * @returns {object[]} New sorted array
+ */
+export const sortFigures = (figures, sortOption, isSearchActive) => {
+  const sorted = [...figures];
+
+  switch (sortOption) {
+    case SORT_OPTIONS.NEWEST:
+      return sorted.sort((a, b) => {
+        const ay = parseFigureYear(a.year);
+        const by = parseFigureYear(b.year);
+        if (ay === null && by === null) return 0;
+        if (ay === null) return 1;
+        if (by === null) return -1;
+        return by - ay;
+      });
+
+    case SORT_OPTIONS.OLDEST:
+      return sorted.sort((a, b) => {
+        const ay = parseFigureYear(a.year);
+        const by = parseFigureYear(b.year);
+        if (ay === null && by === null) return 0;
+        if (ay === null) return 1;
+        if (by === null) return -1;
+        return ay - by;
+      });
+
+    case SORT_OPTIONS.TITLE:
+      return sorted.sort((a, b) => {
+        const at = a.paperTitle || a.sourceName || "";
+        const bt = b.paperTitle || b.sourceName || "";
+        return at.localeCompare(bt);
+      });
+
+    case SORT_OPTIONS.RELEVANCE:
+    default:
+      if (isSearchActive) return sorted;
+      return sorted.sort((a, b) => {
+        const aCount = (a.codes && a.codes.length) || 0;
+        const bCount = (b.codes && b.codes.length) || 0;
+        const aScore = aCount > 1 ? 2 : aCount === 1 ? 1 : 0;
+        const bScore = bCount > 1 ? 2 : bCount === 1 ? 1 : 0;
+        return bScore - aScore;
+      });
+  }
 };

@@ -7,7 +7,9 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "generate:data": "node src/generateFiguresData.js"
+    "generate:data": "node src/generateFiguresData.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@astrojs/react": "^4.4.2",
@@ -17,6 +19,11 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "baseline-browser-mapping": "^2.10.19"
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "baseline-browser-mapping": "^2.10.19",
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.8"
   }
 }

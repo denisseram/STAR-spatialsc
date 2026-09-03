@@ -1,20 +1,23 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import "../styles/FigureGrid.css";
 
-import { FILTER_MODES } from "../utils/constants.js";
+import { FILTER_MODES, SORT_OPTIONS } from "../utils/constants.js";
 import { useCodeHierarchy, useFiltering, useStats } from "../hooks/useFiltering.js";
 import { useCodeSelection, useCodeBatchOperations } from "../hooks/useCodeSelection.js";
-import { filterHideByDefault } from "../utils/filterUtils.js";
+import { filterHideByDefault, calculateCodeCounts, sortFigures } from "../utils/filterUtils.js";
 
-import CodeButton from "./CodeButton.jsx";
-import CodeHierarchy from "./CodeHierarchy.jsx";
+import Switch from "./Switch.jsx";
+import ResearchQuestionSearch from "./ResearchQuestionSearch.jsx";
+import FilterSidebar from "./FilterSidebar.jsx";
+import FilterDrawer from "./FilterDrawer.jsx";
+import ActiveFilterBar from "./ActiveFilterBar.jsx";
 import FigureCard from "./FigureCard.jsx";
 import Modal from "./Modal.jsx";
-import WordCloud from "./WordCloud.jsx";
-import SemanticSearch from "./SemanticSearch.jsx";
+
+const formatCount = (n) => n.toLocaleString("en-US");
 
 /**
- * FigureGrid - Main component for displaying and filtering figures
+ * FigureGrid - Main component for displaying, searching, and filtering figures
  */
 export default function FigureGrid({ figures = [] }) {
   const [modal, setModal] = useState(null);
@@ -23,72 +26,111 @@ export default function FigureGrid({ figures = [] }) {
   const [showInteractivityOnly, setShowInteractivityOnly] = useState(false);
   const [showHiddenByDefault, setShowHiddenByDefault] = useState(false);
   const [semanticSearchResults, setSemanticSearchResults] = useState(null);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [searchResetSignal, setSearchResetSignal] = useState(0);
 
   // Use custom hooks for state and calculations
   const { uniqueCodes, grouped: groupedCodes, misc: miscCodes, single: singleLevelCodes } = useCodeHierarchy(figures);
   const { selectedCodes, setSelectedCodes, toggleCode } = useCodeSelection(groupedCodes);
-  const { selectAll, clearAll } = useCodeBatchOperations(groupedCodes, miscCodes, setSelectedCodes);
-  const { filteredFigures, availableCodes } = useFiltering(figures, selectedCodes, filterMode);
+  const { clearAll } = useCodeBatchOperations(groupedCodes, miscCodes, setSelectedCodes);
   const stats = useStats(figures);
 
-  // Apply interactivity filter if enabled
-  const afterInteractivityFilter = useCallback(() => {
-    if (!showInteractivityOnly) return filteredFigures;
-    return filteredFigures.filter((fig) => 
-      (fig.codes || []).includes("subset.interactivity")
-    );
-  }, [filteredFigures, showInteractivityOnly])();
+  const isSearchActive = semanticSearchResults !== null;
 
-  // Apply hide-by-default filter
-  const afterHideByDefaultFilter = useCallback(() => {
-    return filterHideByDefault(afterInteractivityFilter, showHiddenByDefault);
-  }, [afterInteractivityFilter, showHiddenByDefault])();
+  // 1. Scope by search (relevance-ordered figures from ResearchQuestionSearch, or everything)
+  const searchScopedFigures = isSearchActive ? semanticSearchResults : figures;
 
-  // Apply semantic search filter if results exist
-  const finalFilteredFigures = useCallback(() => {
-    let figures = afterHideByDefaultFilter;
-    
-    if (semanticSearchResults && semanticSearchResults.length > 0) {
-      const resultGuids = new Set(semanticSearchResults.map(fig => fig.guid));
-      figures = figures.filter(fig => resultGuids.has(fig.guid));
-    }
-    
-    // Sort: figures with multiple codes first, then figures with 1 code, then figures without codes
-    return figures.sort((a, b) => {
-      const aCodeCount = (a.codes && a.codes.length) || 0;
-      const bCodeCount = (b.codes && b.codes.length) || 0;
-      
-      // Prioritize by: multiple codes (2+) > single code (1) > no codes (0)
-      const aScore = aCodeCount > 1 ? 2 : (aCodeCount === 1 ? 1 : 0);
-      const bScore = bCodeCount > 1 ? 2 : (bCodeCount === 1 ? 1 : 0);
-      
-      return bScore - aScore;
-    });
-  }, [afterHideByDefaultFilter, semanticSearchResults])();
+  // 2. Scope by the two visibility toggles
+  const toggleScopedFigures = useMemo(() => {
+    const afterInteractivity = showInteractivityOnly
+      ? searchScopedFigures.filter((fig) => (fig.codes || []).includes("subset.interactivity"))
+      : searchScopedFigures;
+    return filterHideByDefault(afterInteractivity, showHiddenByDefault);
+  }, [searchScopedFigures, showInteractivityOnly, showHiddenByDefault]);
 
-  // Calculate filtered papers count
-  const filteredPapersCount = new Set(finalFilteredFigures.map(fig => fig.sourceGuid)).size;
+  // 3. Scope by selected classification codes
+  const { filteredFigures, availableCodes } = useFiltering(toggleScopedFigures, selectedCodes, filterMode);
+
+  // Real per-code result counts for the sidebar (independent of code selection itself)
+  const codeCounts = useMemo(
+    () => calculateCodeCounts(toggleScopedFigures, uniqueCodes),
+    [toggleScopedFigures, uniqueCodes]
+  );
+
+  // 4. Sort (relevance order: preserves search ranking, otherwise most-coded first)
+  const finalFilteredFigures = useMemo(
+    () => sortFigures(filteredFigures, SORT_OPTIONS.RELEVANCE, isSearchActive),
+    [filteredFigures, isSearchActive]
+  );
+
+  const filteredPapersCount = new Set(finalFilteredFigures.map((fig) => fig.sourceGuid)).size;
+
+  const hasActiveFilters =
+    selectedCodes.length > 0 || showInteractivityOnly || showHiddenByDefault || isSearchActive;
 
   // Event handlers
-  const handleImageClick = useCallback((figure) => {
-    setModal({
-      src: figure.imagePath,
-      title: figure.name,
-      citation: figure.citation,
-      paperTitle: figure.paperTitle,
-      paperUrl: figure.paperUrl
-    });
+  const handleOpenDetail = useCallback((figure) => {
+    setModal({ figure });
   }, []);
 
   const closeModal = useCallback(() => setModal(null), []);
 
-  const handleSemanticSearchResults = useCallback((results) => {
+  const handleSearchResults = useCallback((results) => {
     setSemanticSearchResults(results);
   }, []);
 
-  const clearSemanticSearch = useCallback(() => {
+  const handleClearFilters = useCallback(() => {
+    clearAll();
+    setFilterMode(FILTER_MODES.AND);
+    setShowInteractivityOnly(false);
+    setShowHiddenByDefault(false);
+  }, [clearAll]);
+
+  const handleClearSearch = useCallback(() => {
     setSemanticSearchResults(null);
+    setSearchResetSignal((n) => n + 1);
   }, []);
+
+  const handleClearEverything = useCallback(() => {
+    handleClearFilters();
+    handleClearSearch();
+  }, [handleClearFilters, handleClearSearch]);
+
+  // Close the mobile drawer if the viewport grows past the breakpoint while open
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 901px)");
+    const handleChange = (e) => {
+      if (e.matches) setIsFilterDrawerOpen(false);
+    };
+    mql.addEventListener("change", handleChange);
+    return () => mql.removeEventListener("change", handleChange);
+  }, []);
+
+  if (!figures || figures.length === 0) {
+    return (
+      <div className="page">
+        <div className="data-error-state">
+          <h1>Spatial Transcriptomics Survey</h1>
+          <p>No figure data is available right now. Please try reloading the page.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const sidebarProps = {
+    selectedCodes,
+    filterMode,
+    onFilterModeChange: setFilterMode,
+    groupedCodes,
+    miscCodes,
+    singleLevelCodes,
+    availableCodes,
+    codeCounts,
+    onToggleCode: toggleCode,
+    onClearAll: handleClearEverything,
+    figures,
+    filteredFigures
+  };
 
   return (
     <div className="page">
@@ -97,117 +139,106 @@ export default function FigureGrid({ figures = [] }) {
           <div className="topbar-left">
             <h1 className="topbar-title">Spatial Transcriptomics Survey</h1>
             <p className="topbar-subtitle">
-              {stats.totalPapers} papers · {stats.totalFigures} figures · {uniqueCodes.length} codes
+              {formatCount(stats.totalPapers)} papers · {formatCount(stats.totalFigures)} figures ·{" "}
+              {formatCount(uniqueCodes.length)} codes
             </p>
           </div>
+        </div>
 
-          <div className="controls-group">
-            {/* Show Codes Toggle */}
-            <div className="control-item">
-              <span className="control-label">Show Codes</span>
-              <label className="switch">
-                <input 
-                  type="checkbox" 
-                  checked={showCodes}
-                  onChange={() => setShowCodes(!showCodes)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
+        <div className="exploration-toolbar">
+          <ResearchQuestionSearch
+            figures={figures}
+            onResults={handleSearchResults}
+            resetSignal={searchResetSignal}
+          />
 
-            {/* Interactivity Button */}
-            <div className="control-item">
-              <button
-                className={`control-button ${showInteractivityOnly ? "active" : ""}`}
-                onClick={() => setShowInteractivityOnly(!showInteractivityOnly)}
-              >
-                {showInteractivityOnly ? "Show All Figures" : "Show Figures from Interactive Papers Only"}
-              </button>
-            </div>
-
-            {/* Benchmarking/Diagrams Toggle */}
-            <div className="control-item">
-              <span className="control-label">Show benchmarking and schematic figures </span>
-              <label className="switch">
-                <input 
-                  type="checkbox" 
-                  checked={showHiddenByDefault}
-                  onChange={() => setShowHiddenByDefault(!showHiddenByDefault)}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-
-            {/* Semantic Search */}
-            {singleLevelCodes.length > 0 && (
-              <div className="control-item">
-                <SemanticSearch
-                  figures={figures}
-                  singleLevelCodes={singleLevelCodes}
-                  onResults={handleSemanticSearchResults}
-                  onClear={clearSemanticSearch}
-                />
-              </div>
-            )}
+          <div className="toolbar-controls">
+            <Switch
+              id="toggle-interactivity"
+              checked={showInteractivityOnly}
+              onChange={() => setShowInteractivityOnly((v) => !v)}
+              label="Interactive papers only"
+            />
+            <Switch
+              id="toggle-hidden-by-default"
+              checked={showHiddenByDefault}
+              onChange={() => setShowHiddenByDefault((v) => !v)}
+              label="Include benchmarking and schematic figures"
+            />
+            <Switch
+              id="toggle-show-codes"
+              checked={showCodes}
+              onChange={() => setShowCodes((v) => !v)}
+              label="Display classification tags"
+            />
           </div>
         </div>
       </header>
 
       <div className="container">
-        <aside className="sidebar">
-          <h2>Filter by Codes</h2>
-          
-          <div className="filter-controls">
-            <div className="filter-actions">
-              <button onClick={selectAll}>Select All</button>
-              <button onClick={clearAll}>Clear</button>
-            </div>
-            
-            <div className="filter-mode">
-              <button 
-                className={`mode-button ${filterMode === FILTER_MODES.AND ? "active" : ""}`}
-                onClick={() => setFilterMode(FILTER_MODES.AND)}
-              >
-                AND
-              </button>
-              <button 
-                className={`mode-button ${filterMode === FILTER_MODES.OR ? "active" : ""}`}
-                onClick={() => setFilterMode(FILTER_MODES.OR)}
-              >
-                OR
-              </button>
-            </div>
-          </div>
-
-          {singleLevelCodes.length > 0 && (
-            <WordCloud
-              figures={figures}
-              filteredFigures={filteredFigures}
-            />
-          )}
-
-          <CodeHierarchy
-            groupedCodes={groupedCodes}
-            miscCodes={miscCodes}
-            selectedCodes={selectedCodes}
-            availableCodes={availableCodes}
-            onToggleCode={toggleCode}
-          />
+        <aside className="sidebar" aria-labelledby="filters-heading-desktop">
+          <FilterSidebar titleId="filters-heading-desktop" {...sidebarProps} />
         </aside>
 
+        <button
+          type="button"
+          className="mobile-filters-button"
+          onClick={() => setIsFilterDrawerOpen(true)}
+        >
+          Filters
+          {selectedCodes.length > 0 && (
+            <span className="mobile-filters-count">{selectedCodes.length}</span>
+          )}
+        </button>
+
+        <FilterDrawer isOpen={isFilterDrawerOpen} onClose={() => setIsFilterDrawerOpen(false)}>
+          <FilterSidebar titleId="filter-drawer-title" {...sidebarProps} />
+        </FilterDrawer>
+
         <main className="main-content">
-          <div className="stats">
-            <div className="stats-text">
-              Showing <strong>{finalFilteredFigures.length}</strong> of{" "}
-              <strong>{figures.length}</strong> figures · Showing{" "}
-              <strong>{filteredPapersCount}</strong> of{" "}
-              <strong>{stats.totalPapers}</strong> papers
-            </div>
+          <ActiveFilterBar
+            selectedCodes={selectedCodes}
+            onRemoveCode={toggleCode}
+            showInteractivityOnly={showInteractivityOnly}
+            onRemoveInteractivityOnly={() => setShowInteractivityOnly(false)}
+            showHiddenByDefault={showHiddenByDefault}
+            onRemoveHiddenByDefault={() => setShowHiddenByDefault(false)}
+            onClearAll={handleClearEverything}
+          />
+
+          <div className="results-header">
+            <p className="results-summary">
+              {hasActiveFilters ? (
+                <>
+                  <strong>{formatCount(finalFilteredFigures.length)}</strong> of{" "}
+                  <strong>{formatCount(stats.totalFigures)}</strong> figures from{" "}
+                  <strong>{formatCount(filteredPapersCount)}</strong> of{" "}
+                  <strong>{formatCount(stats.totalPapers)}</strong> papers
+                </>
+              ) : (
+                <>
+                  <strong>{formatCount(finalFilteredFigures.length)}</strong> figures from{" "}
+                  <strong>{formatCount(filteredPapersCount)}</strong> papers
+                </>
+              )}
+            </p>
           </div>
 
           {finalFilteredFigures.length === 0 ? (
             <div className="no-results">
-              No figures match the selected codes.
+              <p className="no-results-message">No figures match your current search and filters.</p>
+              <div className="no-results-actions">
+                {(selectedCodes.length > 0 || showInteractivityOnly || showHiddenByDefault) && (
+                  <button type="button" className="no-results-action" onClick={handleClearFilters}>
+                    Clear filters
+                  </button>
+                )}
+                {isSearchActive && (
+                  <button type="button" className="no-results-action" onClick={handleClearSearch}>
+                    Clear search
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="figures-grid">
@@ -216,7 +247,7 @@ export default function FigureGrid({ figures = [] }) {
                   key={fig.guid}
                   figure={fig}
                   showCodes={showCodes}
-                  onImageClick={() => handleImageClick(fig)}
+                  onOpenDetail={handleOpenDetail}
                 />
               ))}
             </div>
@@ -228,4 +259,3 @@ export default function FigureGrid({ figures = [] }) {
     </div>
   );
 }
-

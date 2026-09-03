@@ -16,16 +16,18 @@ import * as d3 from "d3";
 export default function WordCloud({ figures, filteredFigures }) {
   const svgRef = useRef(null);
   const [hoveredWord, setHoveredWord] = useState(null);
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Calculate word frequencies from filtered figures
   const wordData = useMemo(() => {
     return analyzeWordFrequencies(filteredFigures);
   }, [filteredFigures]);
 
-  // Draw word cloud with D3.js
+  // Draw word cloud. Re-runs when expanded too, since the <svg> only
+  // exists in the DOM while expanded (collapsed-by-default would
+  // otherwise skip the initial draw and show an empty canvas on open).
   useEffect(() => {
-    if (!svgRef.current || wordData.length === 0) return;
+    if (!isExpanded || !svgRef.current || wordData.length === 0) return;
 
     const width = WORD_CLOUD_CONFIG.CANVAS_WIDTH;
     const height = WORD_CLOUD_CONFIG.CANVAS_HEIGHT;
@@ -37,12 +39,15 @@ export default function WordCloud({ figures, filteredFigures }) {
     const maxCount = Math.max(...wordData.map(w => w.count));
     const minCount = Math.min(...wordData.map(w => w.count));
 
-    // Prepare word data with sizes and positions
+    // Prepare word data with sizes and positions. Words stay horizontal:
+    // the layout only measures unrotated text, so mixing in rotated words
+    // made their real (rotated) footprint disagree with what the collision
+    // check thought it was, which is what caused words to overlap.
     const wordsWithData = wordData.map((word, idx) => ({
       ...word,
       size: calculateFontSize(word.count, minCount, maxCount),
       color: generateWordColor(idx, word.count, maxCount),
-      rotate: ~~(Math.random() * 2) * 90
+      rotate: 0
     }));
 
     // Compute positions for all words
@@ -112,7 +117,7 @@ export default function WordCloud({ figures, filteredFigures }) {
       .duration(200)
       .style("opacity", 0)
       .remove();
-  }, [wordData]);
+  }, [wordData, isExpanded]);
 
   if (wordData.length === 0) {
     return (
@@ -142,7 +147,7 @@ export default function WordCloud({ figures, filteredFigures }) {
             backgroundColor: '#fafafa',
             padding: '20px',
             textAlign: 'center',
-            color: '#999',
+            color: '#4b5563',
             fontSize: '13px',
             height: '250px',
             display: 'flex',

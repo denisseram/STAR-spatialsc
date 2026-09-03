@@ -35,3 +35,35 @@ export const WORD_CLOUD_CONFIG = {
 
 export const PAPER_LINK_TEXT = "Link";
 export const VIEW_PAPER_TEXT = "View Paper";
+
+export const SORT_OPTIONS = {
+  RELEVANCE: "relevance",
+  NEWEST: "newest",
+  OLDEST: "oldest",
+  TITLE: "title"
+};
+
+export const SORT_OPTION_LABELS = {
+  [SORT_OPTIONS.RELEVANCE]: "Relevance",
+  [SORT_OPTIONS.NEWEST]: "Newest publication",
+  [SORT_OPTIONS.OLDEST]: "Oldest publication",
+  [SORT_OPTIONS.TITLE]: "Paper title"
+};
+
+export const SEARCH_MODES = {
+  KEYWORDS: "keywords",
+  SIMILAR: "similar"
+};
+
+export const SEARCH_MODE_LABELS = {
+  [SEARCH_MODES.KEYWORDS]: "Keywords",
+  [SEARCH_MODES.SIMILAR]: "Similar meaning"
+};
+
+// Debounce delay for the research-question search, in ms.
+export const SEARCH_DEBOUNCE_MS = 220;
+
+// Display order for the top-level classification categories, used both by
+// the sidebar accordion and the figure card's code list. Categories not
+// listed here (e.g. "Other") sort after these, in their natural order.
+export const CATEGORY_ORDER = ["Data", "Task", "Visualization"];

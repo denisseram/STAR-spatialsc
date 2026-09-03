@@ -88,7 +88,7 @@ export const generateWordColor = (index, count, maxCount) => {
  * @returns {boolean} True if collision detected
  */
 const checkWordCollision = (x, y, width, height, positions) => {
-  const padding = 8; // Extra padding around words
+  const padding = 3; // Extra padding around words
   
   return positions.some(pos => {
     // Calculate bounding boxes with padding
@@ -138,26 +138,27 @@ export const computeWordPositions = (words, width, height) => {
     
     let placed = false;
     let angle = 0;
-    let radius = 10;
+    let radius = 2;
     const maxRadius = Math.min(width, height) / 2 - PADDING;
-    const angleStep = 0.05; // Smaller step for finer spiral
-    
+    const attemptsPerRing = 48;
+    const angleStep = (2 * Math.PI) / attemptsPerRing; // full revolution per ring
+
     // Try to place word using spiral
     while (!placed && radius < maxRadius) {
       // Try multiple angles at this radius
-      for (let i = 0; i < 72; i++) { // 72 attempts per radius
+      for (let i = 0; i < attemptsPerRing; i++) {
         const x = centerX + radius * Math.cos(angle);
         const y = centerY + radius * Math.sin(angle);
-        
+
         // Check bounds
-        if (x - wordWidth / 2 < PADDING || 
+        if (x - wordWidth / 2 < PADDING ||
             x + wordWidth / 2 > width - PADDING ||
             y - wordHeight / 2 < PADDING ||
             y + wordHeight / 2 > height - PADDING) {
           angle += angleStep;
           continue;
         }
-        
+
         // Check collision with existing words
         if (!checkWordCollision(x, y, wordWidth, wordHeight, positions)) {
           placed = true;
@@ -170,12 +171,12 @@ export const computeWordPositions = (words, width, height) => {
           });
           break;
         }
-        
+
         angle += angleStep;
       }
-      
-      // Increase radius for next iteration
-      radius += 15;
+
+      // Increase radius for next ring (small step keeps the pack tight)
+      radius += 4;
     }
     
     // If still not placed, try random positions
