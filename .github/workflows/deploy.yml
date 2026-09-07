@@ -65,6 +65,11 @@ jobs:
             --output public/data \
             --bibliography STAR-spatial-taxo.json
 
+      # Remove raw PDFs (and other unzipped QDPX artifacts) 
+      - name: Remove raw source PDFs
+        run: |
+          rm -rf public/data/unzipped
+
       # Build the frontend AFTER data exists
       - name: Build
         run: npm run build
