@@ -46,6 +46,7 @@ export const groupCodesByHierarchy = (codes) => {
   // Sort codes by level (deepest first) to avoid structure conflicts
   const sortedCodes = [...codes]
     .filter(code => !isHiddenCode(code))  // Filter out hidden codes
+    .filter(code => code.split(".")[0] !== "Other")  // Hide the "Other" category from the sidebar
     .sort((a, b) => {
       return b.split(".").length - a.split(".").length;
     });
