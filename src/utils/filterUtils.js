@@ -9,7 +9,8 @@ const HIDDEN_CODES = ["subset.interactivity", "spatial use.abstract"];
 
 // Codes that should be hidden by default (can be toggled with a button)
 const HIDE_BY_DEFAULT_CODES = [
-  "Other.Benchmarking / Method evaluation",
+  "Other.Other.Benchmarking / Method evaluation",
+  "Other.other.Benchmarking / Method evaluation",
   "Other.Other.Schematic diagrams",
   "Data.Modality.bulk RNA-seq",
   "Data.Modality.snRNA-seq",
