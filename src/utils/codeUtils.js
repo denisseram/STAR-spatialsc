@@ -47,6 +47,7 @@ export const groupCodesByHierarchy = (codes) => {
   const sortedCodes = [...codes]
     .filter(code => !isHiddenCode(code))  // Filter out hidden codes
     .filter(code => code.split(".")[0] !== "Other")  // Hide the "Other" category from the sidebar
+    .filter(code => code.split(".")[1] !== "Specific Analytical Domains")  // Hide the "Specific Analytical Domains" group from the sidebar
     .sort((a, b) => {
       return b.split(".").length - a.split(".").length;
     });
