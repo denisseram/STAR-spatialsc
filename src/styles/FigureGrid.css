@@ -6,7 +6,7 @@
 }
 
 :root {
-  --bg: rgba(186, 212, 227, 0.35);
+  --bg: rgba(225, 231, 234, 0.35);
   --card-bg: #fff;
   --text: #111827;
   --text-muted: #4b5563;
@@ -187,7 +187,7 @@ summary:focus-visible,
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 14px;
   padding: 6px 4px;
   border-radius: 6px;
@@ -240,7 +240,7 @@ summary:focus-visible,
 
 .code-padre-title {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-muted);
   margin-bottom: 0.2rem;
   text-transform: uppercase;
@@ -279,7 +279,7 @@ summary:focus-visible,
   background: #fff;
   color: var(--text-muted);
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 400;
   cursor: pointer;
   min-height: 16px;
   transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
@@ -305,7 +305,7 @@ summary:focus-visible,
 
 .code-button-count {
   font-size: 9px;
-  font-weight: 700;
+  font-weight: 400;
   color: inherit;
   opacity: 0.75;
 }
@@ -772,8 +772,8 @@ input:checked + .slider .slider-state {
 }
 
 .figure-paper-title {
-  font-size: 11.5px;
-  font-weight: 600;
+  font-size: 10.5px;
+  font-weight: 400;
   color: var(--text-muted);
   line-height: 1.35;
   display: -webkit-box;
@@ -784,14 +784,14 @@ input:checked + .slider .slider-state {
 }
 
 .figure-title {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 300;
   color: var(--text-muted);
 }
 
 .figure-citation {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 300;
   color: var(--text-muted);
   text-align: right;
 }
@@ -858,22 +858,26 @@ input:checked + .slider .slider-state {
 
 .figure-actions {
   display: flex;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 4px;
   margin-top: auto;
   padding-top: 10px;
 }
 
 .figure-action-primary,
 .figure-action-secondary {
-  flex: 1;
+  flex: 0 1 auto;
+  width: calc(25% - 2px);
   text-align: center;
-  padding: 8px 10px;
-  border-radius: 6px;
-  font-size: 11px;
+  padding: 3px 4px;
+  border-radius: 5px;
+  font-size: 7px;
+  line-height: 1.25;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .figure-action-primary {
