@@ -169,7 +169,7 @@ export default function FigureGrid({ figures = [] }) {
               id="toggle-show-codes"
               checked={showCodes}
               onChange={() => setShowCodes((v) => !v)}
-              label="Display classification tags"
+              label="Display codes"
             />
           </div>
         </div>
