@@ -5,10 +5,15 @@
 
 import fs from "fs";
 import path from "path";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const OUTPUT_DIR = "./public/data";
-const IMAGE_BASE_URL =
-  "https://s3.eu-central-1.amazonaws.com/data01.jku-vds-lab.at/other/STAR-spatial/data/images/";
+const IMAGE_BUCKET = "data01.jku-vds-lab.at";
+const IMAGE_PREFIX = "other/STAR-spatial/data/images/";
+const IMAGE_URL_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days: AWS's hard cap for presigned URLs
+
+const s3Client = new S3Client({ region: "eu-central-1" });
 
 /**
  * Load all quotation data from JSON files
@@ -76,12 +81,13 @@ const DUPLICATE_SOURCE_GUID_ALIASES = {
  * @param {Array} quotations - Array of quotation objects
  * @param {Object} codeMap - Map of code GUID to code object
  * @param {Object} sourceMap - Map of source GUID to source object
- * @returns {Array} Array of processed figure objects
+ * @returns {Promise<Array>} Array of processed figure objects
  */
-export function extractFigureData(quotations, codeMap, sourceMap) {
-  return quotations
-    .filter((q) => q.Coding && q.Coding.length > 0)
-    .map((quotation) => {
+export async function extractFigureData(quotations, codeMap, sourceMap) {
+  const relevantQuotations = quotations.filter((q) => q.Coding && q.Coding.length > 0);
+
+  return Promise.all(
+    relevantQuotations.map(async (quotation) => {
       const codingArray = Array.isArray(quotation.Coding)
         ? quotation.Coding
         : [quotation.Coding];
@@ -96,6 +102,13 @@ export function extractFigureData(quotations, codeMap, sourceMap) {
       const source = sourceMap[quotation.source_guid];
       const bibliography = source?.bibliography || sourceMap[canonicalSourceGuid]?.bibliography;
 
+      const imageKey = `${IMAGE_PREFIX}${quotation.source_guid}/${quotation.attrs.guid}.png`;
+      const imagePath = await getSignedUrl(
+        s3Client,
+        new GetObjectCommand({ Bucket: IMAGE_BUCKET, Key: imageKey }),
+        { expiresIn: IMAGE_URL_EXPIRY_SECONDS },
+      );
+
       return {
         guid: quotation.attrs.guid,
         name: quotation.attrs.name,
@@ -104,12 +117,13 @@ export function extractFigureData(quotations, codeMap, sourceMap) {
         subfigNum: quotation.subfig_num,
         codes: codeNames,
         codeGuids: codeGuids,
-        imagePath: `${IMAGE_BASE_URL}${quotation.source_guid}/${quotation.attrs.guid}.png`,
+        imagePath,
         // Add bibliography fields
         citation: bibliography?.citation || null,
         paperTitle: bibliography?.title || null,
         paperUrl: bibliography?.url || null,
         year: bibliography?.year || null,
       };
-    });
+    }),
+  );
 }

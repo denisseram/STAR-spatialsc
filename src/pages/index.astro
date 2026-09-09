@@ -14,7 +14,7 @@ const codeMap = loadCodeMap();
 const sourceMap = loadSourceMap();
 
 // Extract figure data with all metadata
-const figuresData = extractFigureData(quotations, codeMap, sourceMap);
+const figuresData = await extractFigureData(quotations, codeMap, sourceMap);
 ---
 
 <Layout>

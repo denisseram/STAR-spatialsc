@@ -18,6 +18,7 @@ const formatCount = (n) => n.toLocaleString("en-US");
 
 /**
  * FigureGrid - Main component for displaying, searching, and filtering figures
+ * @param {{ figures: Array<Object> }} props
  */
 export default function FigureGrid({ figures = [] }) {
   const [modal, setModal] = useState(null);

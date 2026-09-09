@@ -35,3 +35,6 @@ STAR-spatial-v2.qdpx
 .idea/
 public/data**
 *.qdpx
+.claude/
+.local-images-backup-already-in-s3/
+all_codes_with_research_questions_filtered.csv
