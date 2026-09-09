@@ -6,7 +6,6 @@ import {
   loadCodeMap,
   loadSourceMap,
   extractFigureData,
-  normalizeBaseUrl
 } from "../lib/dataLoader.js";
 
 // Load data at build time
@@ -14,11 +13,8 @@ const quotations = loadQuotations();
 const codeMap = loadCodeMap();
 const sourceMap = loadSourceMap();
 
-// Normalize base URL for image paths
-const baseUrl = normalizeBaseUrl(import.meta.env.BASE_URL);
-
 // Extract figure data with all metadata
-const figuresData = extractFigureData(quotations, codeMap, sourceMap, baseUrl);
+const figuresData = extractFigureData(quotations, codeMap, sourceMap);
 ---
 
 <Layout>

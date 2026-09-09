@@ -16,8 +16,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          lfs: true
 
       # Setup Node (para el frontend)
       - name: Setup Node
@@ -25,50 +23,20 @@ jobs:
         with:
           node-version: 20
 
-      # Setup Python (para correr output.py)
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
       # Install Node dependencies
       - name: Install dependencies (Node)
         run: npm ci
 
-      # (Opcional) instalar dependencias Python si las necesitas
-      - name: Install Python dependencies
+      # Data (JSON de quotations/codes/sources) ya viene procesada y pública
+      # en S3 (subida por el equipo desde output.py). No hace falta
+      # credenciales de AWS porque el prefijo content/ es de lectura pública.
+      - name: Download processed content from S3
         run: |
-          pip install -r requirements.txt
-
-      # Download STAR-spatial-taxo.qdpx from Dropbox
-      - name: Download QDPX
-        run: |
-          wget -O STAR-spatial-taxo.qdpx "https://drive.jku.at/filr/public-link/file-download/0cce88139ed9d20d019f5e3f65fe573e/84626/-7991981832373970718/STAR-spatial-July.qdpx"
-
-      # Download STAR-spatial.json from Dropbox
-      - name: Download bibliography JSON
-        run: |
-          wget -O STAR-spatial-taxo.json "https://drive.jku.at/filr/public-link/file-download/0cce88f19e2bbaaa019e3664797004cf/82076/348549546778528139/STAR-spatial-YAA.json"
-
-      # Clean previous generated data
-      - name: Clean generated data
-        run: |
-          rm -rf public/data/unzipped
-          rm -f public/data/*.json
-          rm -f public/data/*.csv
-          
-      # Run your Python processing script
-      - name: Process QDPX → JSON
-        run: |
-          python output.py \
-            --input STAR-spatial-taxo.qdpx \
-            --output public/data \
-            --bibliography STAR-spatial-taxo.json
-
-      # Remove raw PDFs (and other unzipped QDPX artifacts) 
-      - name: Remove raw source PDFs
-        run: |
-          rm -rf public/data/unzipped
+          aws s3 sync \
+            s3://data01.jku-vds-lab.at/other/STAR-spatial/data/content \
+            ./public/data/content \
+            --no-sign-request \
+            --exclude ".DS_Store"
 
       # Build the frontend AFTER data exists
       - name: Build
@@ -90,4 +58,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-

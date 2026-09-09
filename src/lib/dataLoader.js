@@ -7,6 +7,8 @@ import fs from "fs";
 import path from "path";
 
 const OUTPUT_DIR = "./public/data";
+const IMAGE_BASE_URL =
+  "https://s3.eu-central-1.amazonaws.com/data01.jku-vds-lab.at/other/STAR-spatial/data/images/";
 
 /**
  * Load all quotation data from JSON files
@@ -14,8 +16,8 @@ const OUTPUT_DIR = "./public/data";
  */
 export function loadQuotations() {
   const quotationsDir = path.join(OUTPUT_DIR, "content", "quotations");
-  const quotationFiles = fs.readdirSync(quotationsDir);
-  
+  const quotationFiles = fs.readdirSync(quotationsDir).filter((f) => f.endsWith(".json"));
+
   return quotationFiles.map((file) => {
     const content = fs.readFileSync(path.join(quotationsDir, file), "utf-8");
     return JSON.parse(content);
@@ -28,8 +30,8 @@ export function loadQuotations() {
  */
 export function loadCodeMap() {
   const codesDir = path.join(OUTPUT_DIR, "content", "codes");
-  const codeFiles = fs.readdirSync(codesDir);
-  
+  const codeFiles = fs.readdirSync(codesDir).filter((f) => f.endsWith(".json"));
+
   const codes = codeFiles.map((file) => {
     const content = fs.readFileSync(path.join(codesDir, file), "utf-8");
     return JSON.parse(content);
@@ -44,8 +46,8 @@ export function loadCodeMap() {
  */
 export function loadSourceMap() {
   const sourcesDir = path.join(OUTPUT_DIR, "content", "sources");
-  const sourceFiles = fs.readdirSync(sourcesDir);
-  
+  const sourceFiles = fs.readdirSync(sourcesDir).filter((f) => f.endsWith(".json"));
+
   const sources = sourceFiles.map((file) => {
     const content = fs.readFileSync(path.join(sourcesDir, file), "utf-8");
     return JSON.parse(content);
@@ -74,10 +76,9 @@ const DUPLICATE_SOURCE_GUID_ALIASES = {
  * @param {Array} quotations - Array of quotation objects
  * @param {Object} codeMap - Map of code GUID to code object
  * @param {Object} sourceMap - Map of source GUID to source object
- * @param {string} baseUrl - Base URL for image paths
  * @returns {Array} Array of processed figure objects
  */
-export function extractFigureData(quotations, codeMap, sourceMap, baseUrl) {
+export function extractFigureData(quotations, codeMap, sourceMap) {
   return quotations
     .filter((q) => q.Coding && q.Coding.length > 0)
     .map((quotation) => {
@@ -103,7 +104,7 @@ export function extractFigureData(quotations, codeMap, sourceMap, baseUrl) {
         subfigNum: quotation.subfig_num,
         codes: codeNames,
         codeGuids: codeGuids,
-        imagePath: `${baseUrl}data/images/${quotation.source_guid}/${quotation.attrs.guid}.png`,
+        imagePath: `${IMAGE_BASE_URL}${quotation.source_guid}/${quotation.attrs.guid}.png`,
         // Add bibliography fields
         citation: bibliography?.citation || null,
         paperTitle: bibliography?.title || null,
@@ -111,15 +112,4 @@ export function extractFigureData(quotations, codeMap, sourceMap, baseUrl) {
         year: bibliography?.year || null,
       };
     });
-}
-
-/**
- * Process base URL to ensure proper formatting
- * Ensures BASE_URL always ends with a single trailing slash
- * @param {string} baseUrl - Base URL from import.meta.env.BASE_URL
- * @returns {string} Normalized base URL
- */
-export function normalizeBaseUrl(baseUrl) {
-  const _base = baseUrl || "/";
-  return _base.endsWith("/") ? _base : _base + "/";
 }
